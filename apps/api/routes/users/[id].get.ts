@@ -1,17 +1,21 @@
 import { defineEventHandler, getRouterParam, createError } from 'h3';
 import { UserRepository } from '@intern/domain';
+import { ERROR_MESSAGES, HttpStatus } from '@intern/factory';
 
 export default defineEventHandler(async (event) => {
   const id = Number(getRouterParam(event, 'id'));
   
   if (isNaN(id)) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid ID' });
+    throw createError({ statusCode: HttpStatus.BAD_REQUEST, statusMessage: ERROR_MESSAGES.BAD_REQUEST });
   }
 
   const user = await UserRepository.findById(id);
+  
   if (!user) {
-    throw createError({ statusCode: 404, statusMessage: 'Not Found' });
+    throw createError({ statusCode: HttpStatus.NOT_FOUND, statusMessage: ERROR_MESSAGES.USER_NOT_FOUND });
   }
 
-  return { data: user };
+  const { password, refreshToken, ...safeUser } = user;
+  
+  return safeUser;
 });

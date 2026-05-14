@@ -1,3 +1,4 @@
 export * from './db';
 export * from './schema';
 export * from './repositories/user.repository';
+export * from './repositories/transfer-log.repository';

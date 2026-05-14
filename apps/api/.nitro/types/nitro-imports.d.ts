@@ -5,6 +5,7 @@ declare global {
   const appendHeaders: typeof import('../../../../node_modules/h3').appendHeaders
   const appendResponseHeader: typeof import('../../../../node_modules/h3').appendResponseHeader
   const appendResponseHeaders: typeof import('../../../../node_modules/h3').appendResponseHeaders
+  const applyResponseStatus: typeof import('../../utils/response').applyResponseStatus
   const assertMethod: typeof import('../../../../node_modules/h3').assertMethod
   const cachedEventHandler: typeof import('../../../../node_modules/nitropack/dist/runtime/internal/cache').cachedEventHandler
   const cachedFunction: typeof import('../../../../node_modules/nitropack/dist/runtime/internal/cache').cachedFunction
@@ -86,6 +87,7 @@ declare global {
   const readRawBody: typeof import('../../../../node_modules/h3').readRawBody
   const readValidatedBody: typeof import('../../../../node_modules/h3').readValidatedBody
   const removeResponseHeader: typeof import('../../../../node_modules/h3').removeResponseHeader
+  const requireAuth: typeof import('../../utils/auth').requireAuth
   const runTask: typeof import('../../../../node_modules/nitropack/dist/runtime/internal/task').runTask
   const sanitizeStatusCode: typeof import('../../../../node_modules/h3').sanitizeStatusCode
   const sanitizeStatusMessage: typeof import('../../../../node_modules/h3').sanitizeStatusMessage
@@ -120,6 +122,7 @@ declare global {
   const useRuntimeConfig: typeof import('../../../../node_modules/nitropack/dist/runtime/internal/config').useRuntimeConfig
   const useSession: typeof import('../../../../node_modules/h3').useSession
   const useStorage: typeof import('../../../../node_modules/nitropack/dist/runtime/internal/storage').useStorage
+  const validateBody: typeof import('../../utils/validate').validateBody
   const writeEarlyHints: typeof import('../../../../node_modules/h3').writeEarlyHints
 }
 export { useNitroApp } from 'nitropack/runtime/internal/app';
@@ -134,3 +137,6 @@ export { useEvent } from 'nitropack/runtime/internal/context';
 export { defineTask, runTask } from 'nitropack/runtime/internal/task';
 export { defineNitroErrorHandler } from 'nitropack/runtime/internal/error/utils';
 export { appendCorsHeaders, appendCorsPreflightHeaders, appendHeader, appendHeaders, appendResponseHeader, appendResponseHeaders, assertMethod, callNodeListener, clearResponseHeaders, clearSession, createApp, createAppEventHandler, createError, createEvent, createEventStream, createRouter, defaultContentType, defineEventHandler, defineLazyEventHandler, defineNodeListener, defineNodeMiddleware, defineRequestMiddleware, defineResponseMiddleware, defineWebSocket, defineWebSocketHandler, deleteCookie, dynamicEventHandler, eventHandler, fetchWithEvent, fromNodeMiddleware, fromPlainHandler, fromWebHandler, getCookie, getHeader, getHeaders, getMethod, getProxyRequestHeaders, getQuery, getRequestFingerprint, getRequestHeader, getRequestHeaders, getRequestHost, getRequestIP, getRequestPath, getRequestProtocol, getRequestURL, getRequestWebStream, getResponseHeader, getResponseHeaders, getResponseStatus, getResponseStatusText, getRouterParam, getRouterParams, getSession, getValidatedQuery, getValidatedRouterParams, handleCacheHeaders, handleCors, isCorsOriginAllowed, isError, isEvent, isEventHandler, isMethod, isPreflightRequest, isStream, isWebResponse, lazyEventHandler, parseCookies, promisifyNodeListener, proxyRequest, readBody, readFormData, readMultipartFormData, readRawBody, readValidatedBody, removeResponseHeader, sanitizeStatusCode, sanitizeStatusMessage, sealSession, send, sendError, sendIterable, sendNoContent, sendProxy, sendRedirect, sendStream, sendWebResponse, serveStatic, setCookie, setHeader, setHeaders, setResponseHeader, setResponseHeaders, setResponseStatus, splitCookiesString, toEventHandler, toNodeListener, toPlainHandler, toWebHandler, toWebRequest, unsealSession, updateSession, useBase, useSession, writeEarlyHints } from 'h3';
+export { requireAuth } from 'C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/apps/api/utils/auth';
+export { applyResponseStatus } from 'C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/apps/api/utils/response';
+export { validateBody } from 'C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/apps/api/utils/validate';

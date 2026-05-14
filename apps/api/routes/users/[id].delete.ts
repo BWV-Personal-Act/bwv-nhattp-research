@@ -1,18 +1,22 @@
-import { defineEventHandler, getRouterParam, createError, sendNoContent } from 'h3';
+import { defineEventHandler, getRouterParam, createError } from 'h3';
 import { UserRepository } from '@intern/domain';
+import { requireAuth } from '../../utils/auth';
+import { ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES } from '@intern/factory';
 
 export default defineEventHandler(async (event) => {
-  const id = Number(getRouterParam(event, 'id'));
+  await requireAuth(event);
   
+  const id = Number(getRouterParam(event, 'id'));
   if (isNaN(id)) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid ID' });
+    throw createError({ statusCode: HttpStatus.BAD_REQUEST, statusMessage: ERROR_MESSAGES.BAD_REQUEST });
   }
 
   const user = await UserRepository.findById(id);
   if (!user) {
-    throw createError({ statusCode: 404, statusMessage: 'Not Found' });
+    throw createError({ statusCode: HttpStatus.NOT_FOUND, statusMessage: ERROR_MESSAGES.USER_NOT_FOUND });
   }
 
   await UserRepository.delete(id);
-  return sendNoContent(event, 204); 
+
+  return { message: SUCCESS_MESSAGES.USER_DELETE };
 });

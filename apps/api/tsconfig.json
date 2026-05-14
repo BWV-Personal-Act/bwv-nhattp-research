@@ -3,7 +3,8 @@
   "compilerOptions": {
     "paths": {
       "~/*": ["./*"],
-      "@intern/domain": ["../../packages/domain/src/index.ts"]
+      "@intern/domain": ["../../packages/domain/src/index.ts"],
+      "@intern/factory": ["../../packages/factory/src/index.ts"]
     },
     "types": ["node"]
   },

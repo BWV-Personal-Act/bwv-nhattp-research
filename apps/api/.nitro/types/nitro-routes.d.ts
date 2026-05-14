@@ -3,6 +3,36 @@ import type { Serialize, Simplify } from "nitropack/types";
 declare module "nitropack/types" {
   type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T
   interface InternalApi {
+    '/auth/change-password': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/auth/change-password.post').default>>>>
+    }
+    '/auth/login': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/auth/login.post').default>>>>
+    }
+    '/auth/logout': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/auth/logout.post').default>>>>
+    }
+    '/auth/me': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/auth/me.get').default>>>>
+    }
+    '/auth/refresh-token': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/auth/refresh-token.post').default>>>>
+    }
+    '/auth/register': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/auth/register.post').default>>>>
+    }
+    '/health': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/health.get').default>>>>
+    }
+    '/transfers': {
+      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/transfers/index.post').default>>>>
+    }
+    '/transfers/logs/all': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/transfers/logs/all.get').default>>>>
+    }
+    '/transfers/logs/user_:userId': {
+      'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/transfers/logs/user_[userId].get').default>>>>
+    }
     '/users/:id': {
       'delete': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/users/[id].delete').default>>>>
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/users/[id].get').default>>>>
@@ -10,7 +40,6 @@ declare module "nitropack/types" {
     }
     '/users': {
       'get': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/users/index.get').default>>>>
-      'post': Simplify<Serialize<Awaited<ReturnType<typeof import('../../routes/users/index.post').default>>>>
     }
   }
 }

@@ -3,7 +3,7 @@ import { Server } from 'node:http';
 import { resolve, dirname, join } from 'node:path';
 import nodeCrypto from 'node:crypto';
 import { parentPort, threadId } from 'node:worker_threads';
-import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, createError, sendRedirect, proxyRequest, getRequestURL, getRequestHeader, getResponseHeader, getRequestHeaders, setResponseHeaders, setResponseStatus, send, removeResponseHeader, appendResponseHeader, setResponseHeader, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getRouterParam, readBody, getQuery as getQuery$1, sendNoContent } from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/node_modules/h3/dist/index.mjs';
+import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, createError, sendRedirect, proxyRequest, getRequestURL, getRequestHeader, getResponseHeader, getRequestHeaders, setResponseHeaders, setResponseStatus, send, removeResponseHeader, appendResponseHeader, setResponseHeader, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getRouterParam, readBody, getQuery as getQuery$1, getHeader } from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/node_modules/h3/dist/index.mjs';
 import destr from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/node_modules/destr/dist/index.mjs';
 import { createHooks } from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/node_modules/hookable/dist/index.mjs';
 import { createFetch, Headers as Headers$1 } from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/node_modules/ofetch/dist/node.mjs';
@@ -24,8 +24,11 @@ import { SourceMapConsumer } from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-
 import { promises } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname as dirname$1, resolve as resolve$1 } from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/node_modules/pathe/dist/index.mjs';
-import { mysqlTable, timestamp, varchar, serial } from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/packages/domain/node_modules/drizzle-orm/mysql-core/index.js';
-import { eq } from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/packages/domain/node_modules/drizzle-orm/index.js';
+import bcrypt from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/node_modules/bcrypt/bcrypt.js';
+import jwt from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/node_modules/jsonwebtoken/index.js';
+import * as yup from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/node_modules/yup/index.js';
+import { relations, eq, or, gte, lte, like, and, sql, desc } from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/packages/domain/node_modules/drizzle-orm/index.js';
+import { mysqlTable, timestamp, varchar, mysqlEnum, decimal, int, index, alias } from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/packages/domain/node_modules/drizzle-orm/mysql-core/index.js';
 import { drizzle } from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/packages/domain/node_modules/drizzle-orm/mysql2/index.js';
 import mysql from 'file://C:/Users/nhat.tp/Documents/bwv-nhattp-research-nitro-drizzle-radash/node_modules/mysql2/promise.js';
 
@@ -619,7 +622,7 @@ const _inlineRuntimeConfig = {
   },
   "nitro": {
     "routeRules": {
-      "/api/**": {
+      "/**": {
         "cors": true,
         "headers": {
           "access-control-allow-origin": "*",
@@ -935,23 +938,156 @@ async function errorHandler(error, event) {
   // H3 will handle fallback
 }
 
+function defineNitroPlugin(def) {
+  return def;
+}
+
+const Nationality = {
+  US: "US",
+  JAPAN: "\u65E5\u672C"
+};
+
+var HttpStatus = /* @__PURE__ */ ((HttpStatus2) => {
+  HttpStatus2[HttpStatus2["OK"] = 200] = "OK";
+  HttpStatus2[HttpStatus2["CREATED"] = 201] = "CREATED";
+  HttpStatus2[HttpStatus2["BAD_REQUEST"] = 400] = "BAD_REQUEST";
+  HttpStatus2[HttpStatus2["UNAUTHORIZED"] = 401] = "UNAUTHORIZED";
+  HttpStatus2[HttpStatus2["FORBIDDEN"] = 403] = "FORBIDDEN";
+  HttpStatus2[HttpStatus2["NOT_FOUND"] = 404] = "NOT_FOUND";
+  HttpStatus2[HttpStatus2["INTERNAL_SERVER_ERROR"] = 500] = "INTERNAL_SERVER_ERROR";
+  return HttpStatus2;
+})(HttpStatus || {});
+
+const SUCCESS_MESSAGES = {
+  REGISTER: "Registered",
+  LOGIN: "Logged in",
+  REFRESH_TOKEN: "Token refreshed",
+  CHANGE_PASSWORD: "Password changed",
+  LOGOUT: "Logged out",
+  TRANSFER: "Transfer completed",
+  USER_UPDATE: "User updated",
+  USER_DELETE: "User deleted"
+};
+const ERROR_MESSAGES = {
+  INTERNAL_SERVER_ERROR: "Internal server error",
+  UNAUTHORIZED: "Unauthorized",
+  NOT_FOUND: "Resource not found",
+  BAD_REQUEST: "Bad request",
+  VALIDATION_ERROR: "Validation failed",
+  TOKEN_EXPIRED: "Token has expired",
+  TOKEN_INVALID: "Invalid token",
+  REFRESH_TOKEN_NOT_FOUND: "Refresh token missing",
+  USER_NOT_FOUND: "User not found",
+  INSUFFICIENT_BALANCE: "Insufficient balance",
+  EMAIL_ALREADY_EXISTS: "Email already exists",
+  INVALID_PASSWORD: "Invalid password"
+};
+
+const baseTransferSchema = yup.object({
+  toUserId: yup.number().required("Please select a recipient").positive("Invalid recipient ID").notOneOf([yup.ref("fromUserId")], "Recipient cannot be the same as sender"),
+  amount: yup.number().required("Please enter an amount").positive("Amount must be a positive number")
+});
+yup.object({
+  body: baseTransferSchema
+});
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+const passwordField = yup.string().matches(
+  passwordRegex,
+  "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character"
+).required("Password is required");
+const nameWithNationalityTest = yup.string().required("Name is required").min(3, "Name must be at least 3 characters").test("check-name-by-nationality", "Name is invalid", function(value) {
+  const { nationality } = this.parent;
+  if (!value || !nationality) return true;
+  if (nationality === Nationality.US) {
+    return (
+      // Regex to check if string contains only ASCII characters (0-127)
+      // Matches strings that do NOT contain any bytes in range 0x80-0xFF
+      /^[^\x80-\xFF]*$/.test(value) || this.createError({ message: "For US, name can only contain 1-byte characters." })
+    );
+  }
+  if (nationality === Nationality.JAPAN) {
+    return (
+      // Regex to check if string contains any non-ASCII characters
+      // Matches strings that contain at least one byte in range 0x80-0xFF
+      /[\x80-\xFF]/.test(value) || this.createError({ message: "For Japan, name must contain multi-byte characters." })
+    );
+  }
+  return true;
+});
+const userCoreFields = {
+  email: yup.string().email("Invalid email format").required("Email is required"),
+  name: nameWithNationalityTest,
+  nationality: yup.string().oneOf(Object.values(Nationality), "Invalid nationality").required("Nationality is required"),
+  balance: yup.number().transform((v) => isNaN(v) ? 0 : v).default(0).min(0, "Balance cannot be negative")
+};
+const updateUserSchema = yup.object().shape({
+  ...userCoreFields
+});
+yup.object().shape({
+  ...userCoreFields,
+  password: passwordField,
+  confirmPassword: yup.string().oneOf([yup.ref("password")], "Confirm password does not match").required("Please confirm your password")
+});
+yup.object().shape({
+  email: yup.string().email("Invalid email format").required("Email is required"),
+  password: yup.string().required("Password is required")
+});
+yup.object().shape({
+  oldPassword: yup.string().required("Please enter your current password"),
+  newPassword: passwordField,
+  confirmNewPassword: yup.string().oneOf([yup.ref("newPassword")], "Confirm password does not match").required("Please confirm your new password")
+});
+
+const backendRegisterSchema = yup.object({
+  email: yup.string().email("Invalid email format").required("Email is required"),
+  name: yup.string().min(3, "Name must be at least 3 characters").required("Name is required"),
+  password: yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+  nationality: yup.string().optional()
+});
+const backendLoginSchema = yup.object({
+  email: yup.string().email("Invalid email format").required("Email is required"),
+  password: yup.string().required("Password is required")
+});
+const backendChangePasswordSchema = yup.object({
+  oldPassword: yup.string().required("Old password is required"),
+  newPassword: yup.string().min(6, "New password must be at least 6 characters").required("New password is required")
+});
+
+const _Sq3fLsApwBsZ4f48tsNUWHTFxRjtjjrbLtaMUkKWsk = defineNitroPlugin((nitroApp) => {
+  nitroApp.hooks.hook("error", (error, { event }) => {
+    if (!event) return;
+    const h3Error = error;
+    const statusCode = h3Error.statusCode || 500;
+    const message = h3Error.statusMessage || ERROR_MESSAGES.INTERNAL_SERVER_ERROR;
+    const data = h3Error.data || null;
+    const response = {
+      message,
+      ...data && { errors: data }
+    };
+    event.node.res.setHeader("Content-Type", "application/json");
+    event.node.res.statusCode = statusCode;
+    event.node.res.end(JSON.stringify(response));
+  });
+});
+
 const plugins = [
-  
+  _Sq3fLsApwBsZ4f48tsNUWHTFxRjtjjrbLtaMUkKWsk
 ];
 
 const assets = {
   "/index.mjs": {
     "type": "text/javascript; charset=utf-8",
-    "etag": "\"bf86-L2c0Nlp4dXKdsRzauH0rAEGamFU\"",
-    "mtime": "2026-05-14T02:57:44.957Z",
-    "size": 49030,
+    "etag": "\"113a8-0vLNDtdWJwaOu47Jyi5TvhYGfv8\"",
+    "mtime": "2026-05-14T10:02:37.185Z",
+    "size": 70568,
     "path": "index.mjs"
   },
   "/index.mjs.map": {
     "type": "application/json",
-    "etag": "\"2a4f5-SFPBtnp946xCYYDuhUgeT+Mfg2k\"",
-    "mtime": "2026-05-14T02:57:44.957Z",
-    "size": 173301,
+    "etag": "\"3cc50-84luwXC+tklnJKES+4Nkx/LR1MQ\"",
+    "mtime": "2026-05-14T10:02:37.185Z",
+    "size": 248912,
     "path": "index.mjs.map"
   }
 };
@@ -1043,19 +1179,37 @@ const _332t0X = eventHandler((event) => {
   return readAsset(id);
 });
 
+const _lazy_faj5PH = () => Promise.resolve().then(function () { return changePassword_post$1; });
+const _lazy_UOUTSQ = () => Promise.resolve().then(function () { return login_post$1; });
+const _lazy_lDOGwY = () => Promise.resolve().then(function () { return logout_post$1; });
+const _lazy_yYL1tC = () => Promise.resolve().then(function () { return me_get$1; });
+const _lazy_BtaqEA = () => Promise.resolve().then(function () { return refreshToken_post$1; });
+const _lazy_UYOckX = () => Promise.resolve().then(function () { return register_post$1; });
+const _lazy_rIJrkx = () => Promise.resolve().then(function () { return health_get$1; });
+const _lazy_a4NRt5 = () => Promise.resolve().then(function () { return index_post$1; });
+const _lazy_m3Slzh = () => Promise.resolve().then(function () { return all_get$1; });
+const _lazy_GW6syX = () => Promise.resolve().then(function () { return user__userId__get$1; });
 const _lazy_wBdQNP = () => Promise.resolve().then(function () { return _id__delete$1; });
 const _lazy_R38vSV = () => Promise.resolve().then(function () { return _id__get$1; });
 const _lazy_yl_gGQ = () => Promise.resolve().then(function () { return _id__put$1; });
 const _lazy_BJ7f7t = () => Promise.resolve().then(function () { return index_get$1; });
-const _lazy_m4Lwro = () => Promise.resolve().then(function () { return index_post$1; });
 
 const handlers = [
   { route: '', handler: _332t0X, lazy: false, middleware: true, method: undefined },
+  { route: '/auth/change-password', handler: _lazy_faj5PH, lazy: true, middleware: false, method: "post" },
+  { route: '/auth/login', handler: _lazy_UOUTSQ, lazy: true, middleware: false, method: "post" },
+  { route: '/auth/logout', handler: _lazy_lDOGwY, lazy: true, middleware: false, method: "post" },
+  { route: '/auth/me', handler: _lazy_yYL1tC, lazy: true, middleware: false, method: "get" },
+  { route: '/auth/refresh-token', handler: _lazy_BtaqEA, lazy: true, middleware: false, method: "post" },
+  { route: '/auth/register', handler: _lazy_UYOckX, lazy: true, middleware: false, method: "post" },
+  { route: '/health', handler: _lazy_rIJrkx, lazy: true, middleware: false, method: "get" },
+  { route: '/transfers', handler: _lazy_a4NRt5, lazy: true, middleware: false, method: "post" },
+  { route: '/transfers/logs/all', handler: _lazy_m3Slzh, lazy: true, middleware: false, method: "get" },
+  { route: '/transfers/logs/user_:userId', handler: _lazy_GW6syX, lazy: true, middleware: false, method: "get" },
   { route: '/users/:id', handler: _lazy_wBdQNP, lazy: true, middleware: false, method: "delete" },
   { route: '/users/:id', handler: _lazy_R38vSV, lazy: true, middleware: false, method: "get" },
   { route: '/users/:id', handler: _lazy_yl_gGQ, lazy: true, middleware: false, method: "put" },
-  { route: '/users', handler: _lazy_BJ7f7t, lazy: true, middleware: false, method: "get" },
-  { route: '/users', handler: _lazy_m4Lwro, lazy: true, middleware: false, method: "post" }
+  { route: '/users', handler: _lazy_BJ7f7t, lazy: true, middleware: false, method: "get" }
 ];
 
 function createNitroApp() {
@@ -1322,16 +1476,61 @@ async function shutdown() {
   parentPort?.postMessage({ event: "exit" });
 }
 
+const nationalityValues = Object.values(Nationality);
 const users = mysqlTable("users", {
-  id: serial("id").primaryKey(),
-  name: varchar("name", { length: 255 }).notNull(),
+  id: int("id").autoincrement().primaryKey(),
   email: varchar("email", { length: 255 }).notNull().unique(),
-  createdAt: timestamp("created_at").defaultNow().notNull()
+  name: varchar("name", { length: 255 }).notNull(),
+  password: varchar("password", { length: 255 }).notNull(),
+  balance: decimal("balance", { precision: 10, scale: 2 }).notNull().default("0"),
+  nationality: mysqlEnum("nationality", nationalityValues).default(Nationality.US),
+  refreshToken: varchar("refresh_token", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull()
 });
+const transferLogs = mysqlTable(
+  "transfer_logs",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    senderId: int("sender_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    receiverId: int("receiver_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+    status: mysqlEnum("status", ["success", "pending", "failed"]).notNull().default("success"),
+    message: varchar("message", { length: 255 }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull()
+  },
+  (table) => {
+    return {
+      senderIdx: index("sender_idx").on(table.senderId),
+      receiverIdx: index("receiver_idx").on(table.receiverId),
+      createdAtIdx: index("created_at_idx").on(table.createdAt)
+    };
+  }
+);
+const usersRelations = relations(users, ({ many }) => ({
+  sentTransfers: many(transferLogs, { relationName: "sentTransfers" }),
+  receivedTransfers: many(transferLogs, { relationName: "receivedTransfers" })
+}));
+const transferLogsRelations = relations(transferLogs, ({ one }) => ({
+  sender: one(users, {
+    fields: [transferLogs.senderId],
+    references: [users.id],
+    relationName: "sentTransfers"
+  }),
+  receiver: one(users, {
+    fields: [transferLogs.receiverId],
+    references: [users.id],
+    relationName: "receivedTransfers"
+  })
+}));
 
 const schema = /*#__PURE__*/Object.freeze({
   __proto__: null,
-  users: users
+  transferLogs: transferLogs,
+  transferLogsRelations: transferLogsRelations,
+  users: users,
+  usersRelations: usersRelations
 });
 
 const connectionString = process.env.DATABASE_URL || "";
@@ -1377,17 +1576,367 @@ class UserRepositoryClass extends BaseRepository {
 }
 const UserRepository = new UserRepositoryClass();
 
+class TransferLogRepositoryClass extends BaseRepository {
+  constructor() {
+    super(transferLogs);
+  }
+  async findLogs(filters) {
+    const { page, limit, startDate, endDate, search, userId } = filters;
+    const offset = (page - 1) * limit;
+    const sender = alias(users, "sender");
+    const receiver = alias(users, "receiver");
+    const conditions = [];
+    if (userId) {
+      conditions.push(or(eq(transferLogs.senderId, userId), eq(transferLogs.receiverId, userId)));
+    }
+    if (startDate) {
+      conditions.push(gte(transferLogs.createdAt, new Date(startDate)));
+    }
+    if (endDate) {
+      conditions.push(lte(transferLogs.createdAt, new Date(endDate)));
+    }
+    if (search) {
+      const keyword = `%${search}%`;
+      const searchConditions = [
+        like(transferLogs.status, keyword),
+        like(transferLogs.message, keyword),
+        like(sender.name, keyword),
+        like(sender.email, keyword),
+        like(receiver.name, keyword),
+        like(receiver.email, keyword)
+      ];
+      if (!isNaN(Number(search))) {
+        searchConditions.push(eq(transferLogs.amount, search));
+      }
+      conditions.push(or(...searchConditions));
+    }
+    const whereClause = conditions.length > 0 ? and(...conditions) : void 0;
+    const baseQuery = db.select({
+      id: transferLogs.id,
+      amount: transferLogs.amount,
+      status: transferLogs.status,
+      message: transferLogs.message,
+      createdAt: transferLogs.createdAt,
+      sender: {
+        id: sender.id,
+        name: sender.name,
+        email: sender.email
+      },
+      receiver: {
+        id: receiver.id,
+        name: receiver.name,
+        email: receiver.email
+      }
+    }).from(transferLogs).leftJoin(sender, eq(transferLogs.senderId, sender.id)).leftJoin(receiver, eq(transferLogs.receiverId, receiver.id));
+    const [countResult] = await db.select({ count: sql`count(*)` }).from(transferLogs).leftJoin(sender, eq(transferLogs.senderId, sender.id)).leftJoin(receiver, eq(transferLogs.receiverId, receiver.id)).where(whereClause);
+    const total = Number((countResult == null ? void 0 : countResult.count) || 0);
+    const data = await baseQuery.where(whereClause).limit(limit).offset(offset).orderBy(desc(transferLogs.createdAt));
+    return {
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+      data
+    };
+  }
+  async transferBalance(fromUserId, toUserId, amount) {
+    return await db.transaction(async (tx) => {
+      const [fromUser] = await tx.select().from(users).where(eq(users.id, fromUserId));
+      const [toUser] = await tx.select().from(users).where(eq(users.id, toUserId));
+      if (!fromUser || !toUser) {
+        throw new Error("User not found");
+      }
+      if (Number(fromUser.balance) < amount) {
+        throw new Error("Insufficient balance");
+      }
+      await tx.update(users).set({ balance: sql`${users.balance} - ${amount}` }).where(eq(users.id, fromUserId));
+      await tx.update(users).set({ balance: sql`${users.balance} + ${amount}` }).where(eq(users.id, toUserId));
+      await tx.insert(transferLogs).values({
+        senderId: fromUserId,
+        receiverId: toUserId,
+        amount: String(amount),
+        status: "success"
+      });
+      return true;
+    });
+  }
+}
+const TransferLogRepository = new TransferLogRepositoryClass();
+
+async function requireAuth(event) {
+  const authHeader = getHeader(event, "authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw createError({ statusCode: HttpStatus.UNAUTHORIZED, statusMessage: ERROR_MESSAGES.UNAUTHORIZED });
+  }
+  const token = authHeader.split(" ")[1];
+  if (!process.env.JWT_ACCESS_SECRET) {
+    throw createError({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, statusMessage: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    const user = await UserRepository.findById(decoded.id);
+    if (!user) {
+      throw createError({ statusCode: HttpStatus.UNAUTHORIZED, statusMessage: ERROR_MESSAGES.UNAUTHORIZED });
+    }
+    event.context.user = user;
+    return user;
+  } catch (error) {
+    throw createError({ statusCode: HttpStatus.UNAUTHORIZED, statusMessage: ERROR_MESSAGES.UNAUTHORIZED });
+  }
+}
+
+async function validateBody(event, schema) {
+  const body = await readBody(event).catch(() => ({}));
+  try {
+    const validatedData = await schema.validate(body, {
+      abortEarly: false,
+      stripUnknown: true
+    });
+    return validatedData;
+  } catch (error) {
+    throw createError({
+      statusCode: HttpStatus.BAD_REQUEST,
+      statusMessage: ERROR_MESSAGES.VALIDATION_ERROR,
+      data: error.errors
+    });
+  }
+}
+
+const changePassword_post = defineEventHandler(async (event) => {
+  const userContext = await requireAuth(event);
+  const body = await validateBody(event, backendChangePasswordSchema);
+  const user = await UserRepository.findById(userContext.id);
+  if (!user) {
+    throw createError({ statusCode: HttpStatus.NOT_FOUND, statusMessage: ERROR_MESSAGES.USER_NOT_FOUND });
+  }
+  const isMatch = await bcrypt.compare(body.oldPassword, user.password);
+  if (!isMatch) {
+    throw createError({ statusCode: HttpStatus.UNAUTHORIZED, statusMessage: ERROR_MESSAGES.INVALID_PASSWORD });
+  }
+  const hashedNewPassword = await bcrypt.hash(body.newPassword, 10);
+  await UserRepository.update(user.id, {
+    password: hashedNewPassword,
+    refreshToken: null
+  });
+  return { message: SUCCESS_MESSAGES.CHANGE_PASSWORD };
+});
+
+const changePassword_post$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: changePassword_post
+});
+
+const login_post = defineEventHandler(async (event) => {
+  const body = await validateBody(event, backendLoginSchema);
+  const user = await UserRepository.findByEmail(body.email);
+  const passwordHash = user ? user.password : await bcrypt.hash("dummy_password", 10);
+  const isMatch = await bcrypt.compare(body.password, passwordHash);
+  if (!isMatch || !user) {
+    throw createError({ statusCode: HttpStatus.UNAUTHORIZED, statusMessage: ERROR_MESSAGES.UNAUTHORIZED });
+  }
+  if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
+    throw createError({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, statusMessage: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+  }
+  const accessToken = jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_ACCESS_SECRET,
+    { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m" }
+  );
+  const refreshToken = jwt.sign(
+    { id: user.id },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d" }
+  );
+  await UserRepository.update(user.id, { refreshToken });
+  const { password, refreshToken: _, ...safeUser } = user;
+  return { user: safeUser, accessToken, refreshToken };
+});
+
+const login_post$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: login_post
+});
+
+const logout_post = defineEventHandler(async (event) => {
+  const user = await requireAuth(event);
+  await UserRepository.update(user.id, { refreshToken: null });
+  return { message: SUCCESS_MESSAGES.LOGOUT };
+});
+
+const logout_post$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: logout_post
+});
+
+const me_get = defineEventHandler(async (event) => {
+  const userContext = await requireAuth(event);
+  const user = await UserRepository.findById(userContext.id);
+  if (!user) {
+    throw createError({ statusCode: HttpStatus.NOT_FOUND, statusMessage: ERROR_MESSAGES.USER_NOT_FOUND });
+  }
+  const { password, refreshToken, ...safeUser } = user;
+  return safeUser;
+});
+
+const me_get$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: me_get
+});
+
+const refreshToken_post = defineEventHandler(async (event) => {
+  const body = await readBody(event);
+  const { token } = body;
+  if (!token) {
+    throw createError({ statusCode: HttpStatus.BAD_REQUEST, statusMessage: ERROR_MESSAGES.REFRESH_TOKEN_NOT_FOUND });
+  }
+  if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
+    throw createError({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, statusMessage: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    const user = await UserRepository.findById(decoded.id);
+    if (!user) {
+      throw createError({ statusCode: HttpStatus.NOT_FOUND, statusMessage: ERROR_MESSAGES.USER_NOT_FOUND });
+    }
+    if (user.refreshToken !== token) {
+      throw createError({ statusCode: HttpStatus.UNAUTHORIZED, statusMessage: ERROR_MESSAGES.TOKEN_INVALID });
+    }
+    const accessToken = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "15m" }
+    );
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || "7d" }
+    );
+    await UserRepository.update(user.id, { refreshToken });
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw createError({ statusCode: HttpStatus.UNAUTHORIZED, statusMessage: ERROR_MESSAGES.TOKEN_INVALID });
+  }
+});
+
+const refreshToken_post$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: refreshToken_post
+});
+
+function applyResponseStatus(event, status) {
+  setResponseStatus(event, status);
+}
+
+const register_post = defineEventHandler(async (event) => {
+  const body = await validateBody(event, backendRegisterSchema);
+  const existingUser = await UserRepository.findByEmail(body.email);
+  if (existingUser) {
+    throw createError({ statusCode: HttpStatus.BAD_REQUEST, statusMessage: ERROR_MESSAGES.EMAIL_ALREADY_EXISTS });
+  }
+  const hashedPassword = await bcrypt.hash(body.password, 10);
+  const [result] = await UserRepository.create({
+    email: body.email,
+    name: body.name,
+    password: hashedPassword,
+    nationality: body.nationality,
+    balance: 1e3
+  });
+  applyResponseStatus(event, HttpStatus.CREATED);
+  return { id: result.insertId };
+});
+
+const register_post$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: register_post
+});
+
+const health_get = defineEventHandler(() => {
+  return { status: "OK" };
+});
+
+const health_get$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: health_get
+});
+
+const index_post = defineEventHandler(async (event) => {
+  const userContext = await requireAuth(event);
+  const body = await validateBody(event, baseTransferSchema);
+  try {
+    await TransferLogRepository.transferBalance(
+      userContext.id,
+      body.toUserId,
+      body.amount
+    );
+    return { message: SUCCESS_MESSAGES.TRANSFER };
+  } catch (error) {
+    if (error.message === "User not found") {
+      throw createError({ statusCode: HttpStatus.NOT_FOUND, statusMessage: ERROR_MESSAGES.USER_NOT_FOUND });
+    }
+    if (error.message === "Insufficient balance") {
+      throw createError({ statusCode: HttpStatus.BAD_REQUEST, statusMessage: ERROR_MESSAGES.INSUFFICIENT_BALANCE });
+    }
+    throw createError({ statusCode: HttpStatus.INTERNAL_SERVER_ERROR, statusMessage: ERROR_MESSAGES.INTERNAL_SERVER_ERROR });
+  }
+});
+
+const index_post$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: index_post
+});
+
+const all_get = defineEventHandler(async (event) => {
+  await requireAuth(event);
+  const query = getQuery$1(event);
+  const filters = {
+    page: Number(query.page) || 1,
+    limit: Number(query.limit) || 10,
+    startDate: query.startDate ? String(query.startDate) : void 0,
+    endDate: query.endDate ? String(query.endDate) : void 0,
+    search: query.search ? String(query.search) : void 0
+  };
+  return await TransferLogRepository.findLogs(filters);
+});
+
+const all_get$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: all_get
+});
+
+const user__userId__get = defineEventHandler(async (event) => {
+  await requireAuth(event);
+  const query = getQuery$1(event);
+  const userId = Number(getRouterParam(event, "userId"));
+  if (isNaN(userId)) {
+    throw createError({ statusCode: HttpStatus.BAD_REQUEST, statusMessage: ERROR_MESSAGES.BAD_REQUEST });
+  }
+  const filters = {
+    page: Number(query.page) || 1,
+    limit: Number(query.limit) || 10,
+    startDate: query.startDate ? String(query.startDate) : void 0,
+    endDate: query.endDate ? String(query.endDate) : void 0,
+    search: query.search ? String(query.search) : void 0,
+    userId
+  };
+  return await TransferLogRepository.findLogs(filters);
+});
+
+const user__userId__get$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  default: user__userId__get
+});
+
 const _id__delete = defineEventHandler(async (event) => {
+  await requireAuth(event);
   const id = Number(getRouterParam(event, "id"));
   if (isNaN(id)) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid ID" });
+    throw createError({ statusCode: HttpStatus.BAD_REQUEST, statusMessage: ERROR_MESSAGES.BAD_REQUEST });
   }
   const user = await UserRepository.findById(id);
   if (!user) {
-    throw createError({ statusCode: 404, statusMessage: "Not Found" });
+    throw createError({ statusCode: HttpStatus.NOT_FOUND, statusMessage: ERROR_MESSAGES.USER_NOT_FOUND });
   }
   await UserRepository.delete(id);
-  return sendNoContent(event, 204);
+  return { message: SUCCESS_MESSAGES.USER_DELETE };
 });
 
 const _id__delete$1 = /*#__PURE__*/Object.freeze({
@@ -1398,13 +1947,14 @@ const _id__delete$1 = /*#__PURE__*/Object.freeze({
 const _id__get = defineEventHandler(async (event) => {
   const id = Number(getRouterParam(event, "id"));
   if (isNaN(id)) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid ID" });
+    throw createError({ statusCode: HttpStatus.BAD_REQUEST, statusMessage: ERROR_MESSAGES.BAD_REQUEST });
   }
   const user = await UserRepository.findById(id);
   if (!user) {
-    throw createError({ statusCode: 404, statusMessage: "Not Found" });
+    throw createError({ statusCode: HttpStatus.NOT_FOUND, statusMessage: ERROR_MESSAGES.USER_NOT_FOUND });
   }
-  return { data: user };
+  const { password, refreshToken, ...safeUser } = user;
+  return safeUser;
 });
 
 const _id__get$1 = /*#__PURE__*/Object.freeze({
@@ -1413,23 +1963,18 @@ const _id__get$1 = /*#__PURE__*/Object.freeze({
 });
 
 const _id__put = defineEventHandler(async (event) => {
+  await requireAuth(event);
   const id = Number(getRouterParam(event, "id"));
   if (isNaN(id)) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid ID" });
+    throw createError({ statusCode: HttpStatus.BAD_REQUEST, statusMessage: ERROR_MESSAGES.BAD_REQUEST });
   }
-  const body = await readBody(event);
+  const body = await validateBody(event, updateUserSchema);
   const user = await UserRepository.findById(id);
   if (!user) {
-    throw createError({ statusCode: 404, statusMessage: "Not Found" });
-  }
-  if (body.email && body.email !== user.email) {
-    const emailTaken = await UserRepository.findByEmail(body.email);
-    if (emailTaken) {
-      throw createError({ statusCode: 409, statusMessage: "Conflict" });
-    }
+    throw createError({ statusCode: HttpStatus.NOT_FOUND, statusMessage: ERROR_MESSAGES.USER_NOT_FOUND });
   }
   await UserRepository.update(id, body);
-  return { data: { id } };
+  return { message: SUCCESS_MESSAGES.USER_UPDATE };
 });
 
 const _id__put$1 = /*#__PURE__*/Object.freeze({
@@ -1437,38 +1982,14 @@ const _id__put$1 = /*#__PURE__*/Object.freeze({
   default: _id__put
 });
 
-const index_get = defineEventHandler(async (event) => {
+const index_get = defineEventHandler(async () => {
   const allUsers = await UserRepository.findAll();
-  return {
-    success: true,
-    data: allUsers
-  };
+  const safeUsers = allUsers.map(({ password, refreshToken, ...user }) => user);
+  return safeUsers;
 });
 
 const index_get$1 = /*#__PURE__*/Object.freeze({
   __proto__: null,
   default: index_get
-});
-
-const index_post = defineEventHandler(async (event) => {
-  const body = await readBody(event);
-  if (!body.name || !body.email) {
-    throw createError({ statusCode: 400, statusMessage: "Invalid field" });
-  }
-  const existingUser = await UserRepository.findByEmail(body.email);
-  if (existingUser) {
-    throw createError({ statusCode: 409, statusMessage: "Conflict" });
-  }
-  const [result] = await UserRepository.create({
-    name: body.name,
-    email: body.email
-  });
-  setResponseStatus(event, 201);
-  return { data: { id: result.insertId } };
-});
-
-const index_post$1 = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  default: index_post
 });
 //# sourceMappingURL=index.mjs.map

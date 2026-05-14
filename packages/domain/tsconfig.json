@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.json", 
+  "compilerOptions": {
+    "paths": {
+      "@intern/factory": ["../factory/src/index.ts"],
+      "@intern/domain/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "index.ts"]
+}

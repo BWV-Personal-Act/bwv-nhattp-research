@@ -1,25 +1,25 @@
-import { defineEventHandler, getRouterParam, readBody, createError } from 'h3';
+import { defineEventHandler, getRouterParam, createError } from 'h3';
 import { UserRepository } from '@intern/domain';
+import { requireAuth } from '../../utils/auth';
+import { validateBody } from '../../utils/validate';
+import { updateUserSchema, ERROR_MESSAGES, HttpStatus, SUCCESS_MESSAGES } from '@intern/factory';
 
 export default defineEventHandler(async (event) => {
+  await requireAuth(event);
+  
   const id = Number(getRouterParam(event, 'id'));
   if (isNaN(id)) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid ID' });
+    throw createError({ statusCode: HttpStatus.BAD_REQUEST, statusMessage: ERROR_MESSAGES.BAD_REQUEST });
   }
 
-  const body = await readBody(event);
+  const body = await validateBody(event, updateUserSchema);
+
   const user = await UserRepository.findById(id);
   if (!user) {
-    throw createError({ statusCode: 404, statusMessage: 'Not Found' });
-  }
-  if (body.email && body.email !== user.email) {
-    const emailTaken = await UserRepository.findByEmail(body.email);
-    if (emailTaken) {
-      throw createError({ statusCode: 409, statusMessage: 'Conflict' });
-    }
+    throw createError({ statusCode: HttpStatus.NOT_FOUND, statusMessage: ERROR_MESSAGES.USER_NOT_FOUND });
   }
 
   await UserRepository.update(id, body);
 
-  return { data: { id } };
+  return { message: SUCCESS_MESSAGES.USER_UPDATE };
 });

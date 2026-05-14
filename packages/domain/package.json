@@ -15,8 +15,15 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "drizzle-orm": "^0.39.0",
+    "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.22.3",
     "radash": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6",
+    "@types/jsonwebtoken": "^9",
+    "tsx": "^4.21.0"
   }
 }
