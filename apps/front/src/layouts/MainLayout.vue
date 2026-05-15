@@ -8,8 +8,6 @@
       <main class="page-content">
         <router-view :key="$route.fullPath" />
       </main>
-
-      <AppFooter />
     </div>
   </div>
 </template>
@@ -18,7 +16,6 @@
   import { ref } from 'vue';
   import AppSidebar from '../components/AppSidebar.vue';
   import AppHeader from '../components/AppHeader.vue';
-  import AppFooter from '../components/AppFooter.vue';
 
   const collapsed = ref(false);
 </script>

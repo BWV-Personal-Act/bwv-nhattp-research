@@ -1,8 +1,8 @@
 <template>
   <AuthLayout
-    title="Register"
+    :title="APP_ROUTES.FRONTEND.REGISTER"
     icon="pi pi-user-plus"
-    submit-label="Register"
+    :submit-label="APP_ROUTES.FRONTEND.REGISTER"
     :loading="authStore.loading"
     :error="authStore.error"
     footer-text="Already have an account?"
@@ -97,6 +97,7 @@
     type RegisterDto,
     NATIONALITY_OPTIONS,
     Nationality,
+    APP_ROUTES,
   } from '@intern/factory';
 
   import AuthLayout from '../components/AuthLayout.vue';
@@ -128,6 +129,6 @@
 
   const onSubmit = handleSubmit(async values => {
     const success = await authStore.register(values);
-    if (success) router.push({ name: 'Login' });
+    if (success) router.push({ name: APP_ROUTES.FRONTEND.LOGIN });
   });
 </script>

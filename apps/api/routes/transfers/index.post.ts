@@ -17,10 +17,10 @@ export default defineEventHandler(async (event) => {
 
     return { message: SUCCESS_MESSAGES.TRANSFER };
   } catch (error: any) {
-    if (error.message === 'User not found') {
+    if (error.message === ERROR_MESSAGES.USER_NOT_FOUND) {
       throw createError({ statusCode: HttpStatus.NOT_FOUND, statusMessage: ERROR_MESSAGES.USER_NOT_FOUND });
     }
-    if (error.message === 'Insufficient balance') {
+    if (error.message === ERROR_MESSAGES.INSUFFICIENT_BALANCE) {
       throw createError({ statusCode: HttpStatus.BAD_REQUEST, statusMessage: ERROR_MESSAGES.INSUFFICIENT_BALANCE });
     }
 

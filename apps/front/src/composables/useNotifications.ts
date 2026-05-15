@@ -1,4 +1,5 @@
 import { useToast } from 'primevue/usetoast';
+import { capitalize } from 'radash';
 
 export function useNotifications() {
   const toast = useToast();
@@ -6,7 +7,7 @@ export function useNotifications() {
   const notify = (message: string, type: 'success' | 'error' | 'info' | 'warn' = 'success') => {
     toast.add({
       severity: type,
-      summary: type.charAt(0).toUpperCase() + type.slice(1),
+      summary: capitalize(type),
       detail: message,
       life: 3000,
     });

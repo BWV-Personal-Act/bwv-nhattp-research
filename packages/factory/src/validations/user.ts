@@ -20,20 +20,18 @@ const nameWithNationalityTest = yup
     if (!value || !nationality) return true;
 
     if (nationality === Nationality.US) {
-      return (
-        // Regex to check if string contains only ASCII characters (0-127)
-        // Matches strings that do NOT contain any bytes in range 0x80-0xFF
-        /^[^\x80-\xFF]*$/.test(value) ||
-        this.createError({ message: 'For US, name can only contain 1-byte characters.' })
-      );
+      // All characters must be ASCII (1-byte in UTF-8)
+      if (!/^[\x00-\x7F]+$/.test(value)) {
+        return this.createError({ message: 'For US, name must contain only 1-byte (ASCII) characters.' });
+      }
+      return true;
     }
     if (nationality === Nationality.JAPAN) {
-      return (
-        // Regex to check if string contains any non-ASCII characters
-        // Matches strings that contain at least one byte in range 0x80-0xFF
-        /[\x80-\xFF]/.test(value) ||
-        this.createError({ message: 'For Japan, name must contain multi-byte characters.' })
-      );
+      // All characters must be non-ASCII (multi-byte in UTF-8)
+      if (!/^[^\x00-\x7F]+$/.test(value)) {
+        return this.createError({ message: 'For Japan, name must contain only multi-byte characters.' });
+      }
+      return true;
     }
     return true;
   });

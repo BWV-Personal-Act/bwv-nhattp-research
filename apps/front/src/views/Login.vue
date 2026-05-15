@@ -1,8 +1,8 @@
 <template>
   <AuthLayout
-    title="Login"
+    :title="APP_ROUTES.FRONTEND.LOGIN"
     icon="pi pi-user"
-    submit-label="Login"
+    :submit-label="APP_ROUTES.FRONTEND.LOGIN"
     :loading="authStore.loading"
     :error="authStore.error"
     footer-text="Don't have an account?"

@@ -2,7 +2,9 @@ import { db } from '../db';
 import { transferLogs, users } from '../schema';
 import { eq, and, or, like, gte, lte, sql, desc } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/mysql-core';
+import { sift } from 'radash';
 import { BaseRepository } from './base.repository';
+import { ERROR_MESSAGES } from '@intern/factory';
 
 interface LogFilters {
   page: number;
@@ -56,7 +58,8 @@ class TransferLogRepositoryClass extends BaseRepository<typeof transferLogs> {
       conditions.push(or(...searchConditions));
     }
 
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const compacted = sift(conditions);
+    const whereClause = compacted.length > 0 ? and(...compacted) : undefined;
 
     const baseQuery = db.select({
       id: transferLogs.id,
@@ -107,11 +110,11 @@ class TransferLogRepositoryClass extends BaseRepository<typeof transferLogs> {
       const [toUser] = await tx.select().from(users).where(eq(users.id, toUserId));
 
       if (!fromUser || !toUser) {
-        throw new Error('User not found');
+        throw new Error(ERROR_MESSAGES.USER_NOT_FOUND);
       }
 
       if (Number(fromUser.balance) < amount) {
-        throw new Error('Insufficient balance');
+        throw new Error(ERROR_MESSAGES.INSUFFICIENT_BALANCE);
       }
 
       await tx.update(users)
