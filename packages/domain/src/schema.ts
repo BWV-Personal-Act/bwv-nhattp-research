@@ -20,6 +20,7 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull().unique(),
   name: varchar('name', { length: 255 }).notNull(),
   password: varchar('password', { length: 255 }).notNull(),
+  avatarUrl: varchar('avatar_url', { length: 1024 }),
   balance: decimal('balance', { precision: 10, scale: 2 }).notNull().default('0'),
   nationality: nationalityEnum('nationality').default(Nationality.US),
   createdAt: timestamp('created_at').defaultNow().notNull(),

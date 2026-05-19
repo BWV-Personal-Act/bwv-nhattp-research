@@ -9,6 +9,7 @@ export interface UserFromApi {
   id: number;
   email: string;
   name: string;
+  avatarUrl: string | null;
   nationality: Nationality;
   balance: number;
   createdAt: string;

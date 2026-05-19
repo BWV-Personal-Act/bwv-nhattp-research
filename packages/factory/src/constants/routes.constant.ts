@@ -17,6 +17,7 @@ export const APP_ROUTES = {
     USER: {
       BASE: '/users',
       GET_BY_ID: (id: string | number) => `/users/${id}`,
+      AVATAR: (id: string | number) => `/users/${id}/avatar`,
     },
     TRANSFER: {
       BASE: '/transfers',

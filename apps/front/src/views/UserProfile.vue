@@ -4,6 +4,8 @@
       <Button icon="pi pi-arrow-left" label="Back to Users" class="p-button-text" @click="goBack" />
     </div>
 
+    <h1 class="page-title">User Profile</h1>
+
     <div v-if="loading" class="loading-state">Loading user details...</div>
 
     <div v-else-if="user" class="profile-layout" :class="{ 'single-column': !isMyProfile }">
@@ -21,7 +23,31 @@
       </div>
 
       <div class="profile-card">
-        <h2>User Profile</h2>
+        <div class="avatar-section">
+          <div class="avatar-frame">
+            <img v-if="avatarUrl" :src="avatarUrl" :alt="`${user.name} avatar`" class="avatar-image" />
+            <i v-else class="pi pi-user avatar-fallback"></i>
+          </div>
+
+          <div v-if="isMyProfile" class="avatar-actions">
+            <input
+              ref="avatarInput"
+              class="avatar-input"
+              type="file"
+              accept="image/jpeg"
+              @change="handleAvatarSelect"
+            />
+            <Button
+              icon="pi pi-upload"
+              label="Upload Avatar"
+              :loading="uploadingAvatar"
+              :disabled="uploadingAvatar"
+              @click="openAvatarPicker"
+            />
+            <small class="avatar-note">JPG only, max 2MB.</small>
+          </div>
+        </div>
+
         <div class="info-grid">
           <div v-for="item in profileDetails" :key="item.label" class="info-item">
             <span class="label">{{ item.label }}:</span>
@@ -50,16 +76,21 @@
   import { useLoadingStore } from '../stores/loadingStore';
   import TransferForm from '../components/TransferForm.vue';
   import TransferLogs from '../components/common/TransferLogs.vue';
+  import { useNotifications } from '../composables/useNotifications';
   import type { UserFromApi, AppConfig } from '@intern/factory';
+  import type { ApiErrorResponse } from '../api/types';
 
   const route = useRoute();
   const router = useRouter();
   const userStore = useUserStore();
   const authStore = useAuthStore();
   const loadingStore = useLoadingStore();
+  const { notifySuccess, notifyError } = useNotifications();
 
   const user = ref<UserFromApi | null>(null);
   const loading = ref(true);
+  const uploadingAvatar = ref(false);
+  const avatarInput = ref<HTMLInputElement | null>(null);
 
   const appConfig = inject<AppConfig>('appConfig');
 
@@ -80,6 +111,12 @@
       { label: 'Nationality', value: user.value.nationality },
       { label: 'Balance', value: formattedBalance.value, isHighlight: true },
     ];
+  });
+
+  const avatarUrl = computed(() => {
+    if (!user.value?.avatarUrl) return '';
+    const separator = user.value.avatarUrl.includes('?') ? '&' : '?';
+    return `${user.value.avatarUrl}${separator}v=${encodeURIComponent(user.value.updatedAt)}`;
   });
 
   const goBack = () => router.push('/');
@@ -105,6 +142,42 @@
 
   const logsRef = ref<InstanceType<typeof TransferLogs> | null>(null);
 
+  const openAvatarPicker = () => {
+    avatarInput.value?.click();
+  };
+
+  const handleAvatarSelect = async (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || !user.value) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      notifyError('Avatar image must not exceed 2MB');
+      return;
+    }
+
+    if (file.type !== 'image/jpeg') {
+      notifyError('Avatar image must be a JPG file');
+      return;
+    }
+
+    uploadingAvatar.value = true;
+    loadingStore.startLoading();
+    try {
+      const { data } = await userAPI.uploadAvatar(user.value.id, file);
+      user.value = data;
+      await Promise.all([userStore.fetchUsers(), authStore.fetchCurrentUser()]);
+      notifySuccess('Avatar uploaded');
+    } catch (error) {
+      const typedError = error as { response?: { data?: ApiErrorResponse } };
+      notifyError(typedError?.response?.data?.message || 'Upload avatar failed');
+    } finally {
+      uploadingAvatar.value = false;
+      loadingStore.stopLoading();
+    }
+  };
+
   const handleTransferSuccess = async () => {
     await Promise.all([userStore.fetchUsers(), fetchUserDetails()]);
     if (logsRef.value) {
@@ -114,8 +187,17 @@
 
   onMounted(() => {
     fetchUserDetails();
-    if (userStore.users.length === 0) userStore.fetchUsers();
   });
+
+  watch(
+    isMyProfile,
+    (canTransfer) => {
+      if (canTransfer && userStore.users.length === 0 && !userStore.loading) {
+        userStore.fetchUsers();
+      }
+    },
+    { immediate: true }
+  );
 
   watch(
     () => route.params.id,
@@ -137,6 +219,14 @@
   }
   .header-action {
     margin-bottom: 20px;
+  }
+  .page-title {
+    margin: 0 0 24px;
+    text-align: center;
+    color: #0f172a;
+    font-size: 2rem;
+    line-height: 1.2;
+    font-weight: 700;
   }
 
   .profile-layout {
@@ -169,10 +259,50 @@
     margin-bottom: 20px;
     font-size: 0.9rem;
   }
+  .avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .avatar-frame {
+    width: 144px;
+    height: 144px;
+    border-radius: 50%;
+    border: 3px solid #dbeafe;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .avatar-fallback {
+    color: #94a3b8;
+    font-size: 4rem;
+  }
+  .avatar-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .avatar-input {
+    display: none;
+  }
+  .avatar-note {
+    color: #64748b;
+    font-size: 0.82rem;
+  }
   .info-grid {
     display: grid;
     gap: 16px;
-    margin-top: 20px;
+    margin-top: 28px;
   }
   .info-item {
     display: flex;

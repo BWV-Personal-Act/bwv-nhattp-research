@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { omit } from 'radash';
 import { InferType } from 'yup';
 import {
   backendChangePasswordSchema,
@@ -12,6 +11,7 @@ import {
 } from '@intern/factory';
 import { UserRepository } from '@intern/domain';
 import BaseController from './_base';
+import { toPublicUser } from '~/utils/user';
 
 class AuthController extends BaseController {
   public register = this.define(async (event) => {
@@ -56,14 +56,14 @@ class AuthController extends BaseController {
       },
     );
 
-    return this.ok(event, { rows: { user: omit(user, ['password']), accessToken } });
+    return this.ok(event, { rows: { user: toPublicUser(user), accessToken } });
   });
 
   public me = this.define(async (event) => {
     const userContext = this.getAuthUser(event);
     const user = await UserRepository.findByIdOrFail(userContext.id);
 
-    return this.ok(event, { rows: omit(user, ['password']) });
+    return this.ok(event, { rows: toPublicUser(user) });
   });
 
   public logout = this.define(async (event) => {
