@@ -19,7 +19,7 @@ services:
   migrate:
     build:
       context: .
-      target: migrator
+      dockerfile: ./infra/migrate/Dockerfile.migrate
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-intern_app}
     depends_on:
@@ -27,17 +27,10 @@ services:
         condition: service_healthy
     restart: "no"
 
-  lint:
-    build:
-      context: .
-      target: lint
-    profiles:
-      - check
-
   api:
     build:
       context: .
-      target: api
+      dockerfile: ./infra/api/Dockerfile.api
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -67,7 +60,7 @@ services:
   nginx:
     build:
       context: .
-      target: front
+      dockerfile: ./infra/front/Dockerfile.front
     restart: unless-stopped
     depends_on:
       api:

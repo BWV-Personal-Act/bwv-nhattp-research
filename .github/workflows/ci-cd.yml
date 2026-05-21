@@ -1,6 +1,7 @@
 name: CI/CD
-run-name: Test & Build
-on:
+run-name: Test & Build & Deploy
+on: 
+  workflow_dispatch:
   push:
     branches: ["main"]
 
@@ -15,9 +16,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: '>=22'
-
-      - name: Install Yarn
-        run: corepack enable && corepack prepare yarn@4.12.0 --activate
 
       - name: Install dependencies
         run: yarn install
@@ -38,13 +36,10 @@ jobs:
         run: corepack enable && corepack prepare yarn@4.12.0 --activate
 
       - name: Restore Yarn dependencies from cache
-        run: yarn install --immutable
+        run: yarn install --frozen-lockfile
 
       - name: Run lint and prettier
         run: yarn lint && yarn prettier
-
-      - name: Run Docker lint and prettier
-        run: docker build --target lint .
 
   build:
     runs-on: ubuntu-latest
@@ -58,14 +53,50 @@ jobs:
         with:
           node-version: '>=22'
 
-      - name: Install Yarn
-        run: corepack enable && corepack prepare yarn@4.12.0 --activate
-
       - name: Restore Yarn dependencies from cache
-        run: yarn install --immutable
+        run: yarn install --frozen-lockfile
 
       - name: Build API
         run: yarn build:api
 
       - name: Build Front
         run: yarn build:front
+
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: [install, lint, build]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Copy code to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "."
+          target: "~/intern-source-release"
+          rm: true
+
+      - name: Restart app via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            APP_DIR="$HOME/intern-source"
+            RELEASE_DIR="$HOME/intern-source-release"
+
+            mkdir -p "$APP_DIR"
+            find "$APP_DIR" -mindepth 1 -maxdepth 1 ! -name ".env" -exec rm -rf {} +
+            cp -a "$RELEASE_DIR"/. "$APP_DIR"/
+            rm -rf "$RELEASE_DIR"
+
+            cd "$APP_DIR"
+            docker compose down
+            docker compose up --build -d
+            docker system prune -af
