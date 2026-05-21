@@ -28,7 +28,12 @@
       </FormField>
 
       <FormField label="Initial Balance" :error="errors.balance" required>
-        <FormNumber v-model="balance" mode="currency" currency="USD" locale="en-US" />
+        <FormNumber
+          v-model="balance"
+          mode="currency"
+          currency="USD"
+          locale="en-US"
+        />
       </FormField>
     </div>
 
@@ -51,59 +56,63 @@
 </template>
 
 <script setup lang="ts">
-  import { watch } from 'vue';
-  import { useForm } from 'vee-validate';
-  import { updateUserSchema, NATIONALITY_OPTIONS, Nationality } from '@intern/factory';
-  import Dialog from 'primevue/dialog';
-  import Button from 'primevue/button';
-  import FormField from './common/FormField.vue';
-  import FormInput from './common/FormInput.vue';
-  import FormDropdown from './common/FormDropdown.vue';
-  import FormNumber from './common/FormNumber.vue';
+import {
+  Nationality,
+  NATIONALITY_OPTIONS,
+  updateUserSchema,
+} from "@intern/factory";
+import { UserFromApi } from "@intern/factory";
+import Button from "primevue/button";
+import Dialog from "primevue/dialog";
+import { useForm } from "vee-validate";
+import { watch } from "vue";
 
-  import { UserFromApi } from '@intern/factory';
+import FormDropdown from "./common/FormDropdown.vue";
+import FormField from "./common/FormField.vue";
+import FormInput from "./common/FormInput.vue";
+import FormNumber from "./common/FormNumber.vue";
 
-  const props = defineProps<{
-    visible: boolean;
-    isEdit: boolean;
-    initialData?: Partial<UserFromApi>;
-    loading: boolean;
-  }>();
-  const emit = defineEmits(['update:visible', 'save']);
+const props = defineProps<{
+  visible: boolean;
+  isEdit: boolean;
+  initialData?: Partial<UserFromApi>;
+  loading: boolean;
+}>();
+const emit = defineEmits(["update:visible", "save"]);
 
-  const { errors, handleSubmit, defineField, resetForm, meta } = useForm({
-    validationSchema: updateUserSchema,
-    initialValues: {
-      email: props.initialData?.email || '',
-      name: props.initialData?.name || '',
-      balance: props.initialData?.balance ?? 0,
-      nationality: props.initialData?.nationality || Nationality.US,
-    },
-  });
+const { errors, handleSubmit, defineField, resetForm, meta } = useForm({
+  validationSchema: updateUserSchema,
+  initialValues: {
+    email: props.initialData?.email || "",
+    name: props.initialData?.name || "",
+    balance: props.initialData?.balance ?? 0,
+    nationality: props.initialData?.nationality || Nationality.US,
+  },
+});
 
-  const [email] = defineField('email');
-  const [name] = defineField('name');
-  const [balance] = defineField('balance');
-  const [nationality] = defineField('nationality');
+const [email] = defineField("email");
+const [name] = defineField("name");
+const [balance] = defineField("balance");
+const [nationality] = defineField("nationality");
 
-  watch(
-    () => props.initialData,
-    newVal => {
-      if (newVal) {
-        resetForm({
-          values: {
-            email: newVal.email || '',
-            name: newVal.name || '',
-            balance: newVal.balance ?? 0,
-            nationality: newVal.nationality || Nationality.US,
-          },
-        });
-      }
-    },
-    { deep: true }
-  );
+watch(
+  () => props.initialData,
+  (newVal) => {
+    if (newVal) {
+      resetForm({
+        values: {
+          email: newVal.email || "",
+          name: newVal.name || "",
+          balance: newVal.balance ?? 0,
+          nationality: newVal.nationality || Nationality.US,
+        },
+      });
+    }
+  },
+  { deep: true },
+);
 
-  const onSubmit = handleSubmit(values => {
-    emit('save', { ...props.initialData, ...values });
-  });
+const onSubmit = handleSubmit((values) => {
+  emit("save", { ...props.initialData, ...values });
+});
 </script>

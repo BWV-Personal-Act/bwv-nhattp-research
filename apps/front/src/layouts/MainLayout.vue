@@ -13,34 +13,35 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
-  import AppSidebar from '../components/AppSidebar.vue';
-  import AppHeader from '../components/AppHeader.vue';
+import { ref } from "vue";
 
-  const collapsed = ref(false);
+import AppHeader from "../components/AppHeader.vue";
+import AppSidebar from "../components/AppSidebar.vue";
+
+const collapsed = ref(false);
 </script>
 
 <style scoped>
-  .main-layout {
-    display: flex;
-    min-height: 100vh;
-  }
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+}
 
-  .layout-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    transition: margin-left 0.3s ease;
-    margin-left: 250px;
-  }
+.layout-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left 0.3s ease;
+  margin-left: 250px;
+}
 
-  .layout-content.sidebar-collapsed {
-    margin-left: 60px;
-  }
+.layout-content.sidebar-collapsed {
+  margin-left: 60px;
+}
 
-  .page-content {
-    flex: 1;
-    padding: 24px;
-    background-color: #f8f9fa;
-  }
+.page-content {
+  flex: 1;
+  padding: 24px;
+  background-color: #f8f9fa;
+}
 </style>

@@ -1,6 +1,6 @@
-import { StatusCodes } from 'http-status-codes';
+import { StatusCodes } from "http-status-codes";
 
-import { ERROR_MESSAGES } from '../constants/messages.constant';
+import { ERROR_MESSAGES } from "../constants/messages.constant";
 
 /**
  * Base application error.
@@ -18,7 +18,7 @@ export default class BWError extends Error {
   ) {
     super(message);
 
-    this.name = 'BWError';
+    this.name = "BWError";
     this.httpStatus = httpStatus;
     this.reason = code;
     this.data = data;

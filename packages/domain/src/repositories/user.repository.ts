@@ -1,6 +1,7 @@
-import { NewUser, User, users } from '../schema';
-import { BaseRepository } from './base.repository';
-import { ERROR_MESSAGES, errors } from '@intern/factory';
+import { ERROR_MESSAGES, errors } from "@intern/factory";
+
+import { NewUser, User, users } from "../schema";
+import { BaseRepository } from "./base.repository";
 
 class UserRepositoryClass extends BaseRepository<typeof users, User, NewUser> {
   constructor() {
@@ -23,7 +24,7 @@ class UserRepositoryClass extends BaseRepository<typeof users, User, NewUser> {
   async assertEmailAvailable(email: string) {
     const user = await this.findByEmail(email);
     if (user) {
-      throw new errors.Argument('email', ERROR_MESSAGES.EMAIL_ALREADY_EXISTS);
+      throw new errors.Argument("email", ERROR_MESSAGES.EMAIL_ALREADY_EXISTS);
     }
   }
 }

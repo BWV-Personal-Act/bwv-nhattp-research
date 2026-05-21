@@ -1,6 +1,6 @@
-import { getReasonPhrase, StatusCodes } from 'http-status-codes';
+import { getReasonPhrase, StatusCodes } from "http-status-codes";
 
-import BWError from './error';
+import BWError from "./error";
 
 /**
  * Info object / not a actual arror

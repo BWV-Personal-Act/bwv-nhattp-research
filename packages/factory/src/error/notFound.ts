@@ -1,8 +1,8 @@
-import { getReasonPhrase, StatusCodes } from 'http-status-codes';
-import { isEmpty } from 'radash';
+import { getReasonPhrase, StatusCodes } from "http-status-codes";
+import { isEmpty } from "radash";
 
-import { ERROR_MESSAGES } from '../constants/messages.constant';
-import BWError from './error';
+import { ERROR_MESSAGES } from "../constants/messages.constant";
+import BWError from "./error";
 
 /**
  * NotFoundError

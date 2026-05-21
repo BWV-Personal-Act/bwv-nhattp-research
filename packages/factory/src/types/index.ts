@@ -1,4 +1,4 @@
-import { Nationality } from '../enums/nationality.enum';
+import { Nationality } from "../enums/nationality.enum";
 
 export interface AppConfig {
   locale: string;
@@ -19,7 +19,7 @@ export interface UserFromApi {
 export interface UserForm {
   email: string;
   name: string;
-  nationality: Nationality | '';
+  nationality: Nationality | "";
   balance: number;
 }
 

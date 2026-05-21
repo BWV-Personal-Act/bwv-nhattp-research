@@ -5,11 +5,7 @@
     </div>
 
     <nav class="sidebar-nav">
-      <router-link
-        to="/"
-        class="nav-item"
-        active-class="active"
-      >
+      <router-link to="/" class="nav-item" active-class="active">
         <i class="pi pi-home"></i>
         <span class="nav-label">Dashboard</span>
       </router-link>
@@ -22,11 +18,7 @@
         <i class="pi pi-user"></i>
         <span class="nav-label">User Profile</span>
       </router-link>
-      <router-link
-        to="/transactions"
-        class="nav-item"
-        active-class="active"
-      >
+      <router-link to="/transactions" class="nav-item" active-class="active">
         <i class="pi pi-list"></i>
         <span class="nav-label">Transactions Logs</span>
       </router-link>
@@ -35,8 +27,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useAuthStore } from '../stores/authStore';
+import { computed } from "vue";
+
+import { useAuthStore } from "../stores/authStore";
 
 defineProps<{ collapsed: boolean }>();
 

@@ -1,18 +1,21 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import { userAPI } from '../api/userAPI';
-import { UserFromApi } from '@intern/factory';
-import { useLoadingStore } from './loadingStore';
-import type { ApiErrorResponse } from '../api/types';
-import { sum } from 'radash';
+import { UserFromApi } from "@intern/factory";
+import { defineStore } from "pinia";
+import { sum } from "radash";
+import { computed, ref } from "vue";
 
-export const useUserStore = defineStore('users', () => {
+import type { ApiErrorResponse } from "../api/types";
+import { userAPI } from "../api/userAPI";
+import { useLoadingStore } from "./loadingStore";
+
+export const useUserStore = defineStore("users", () => {
   const users = ref<UserFromApi[]>([]);
   const loading = ref(false);
   const loadingStore = useLoadingStore();
 
   const totalUsers = computed(() => users.value.length);
-  const totalBalance = computed(() => sum(users.value, u => Number(u.balance)));
+  const totalBalance = computed(() =>
+    sum(users.value, (u) => Number(u.balance)),
+  );
 
   const fetchUsers = async () => {
     loadingStore.startLoading();
@@ -22,7 +25,7 @@ export const useUserStore = defineStore('users', () => {
       users.value = data;
     } catch (error) {
       const typedError = error as { response?: { data?: ApiErrorResponse } };
-      console.error(typedError?.response?.data?.message || 'Load error');
+      console.error(typedError?.response?.data?.message || "Load error");
     } finally {
       loading.value = false;
       loadingStore.stopLoading();
@@ -36,8 +39,8 @@ export const useUserStore = defineStore('users', () => {
       await userAPI.deleteUser(id);
       users.value = users.value.filter((u: UserFromApi) => u.id !== id);
       return true;
-    } catch (error) {
-      console.error('Delete failed');
+    } catch (_error) {
+      console.error("Delete failed");
       return false;
     } finally {
       loading.value = false;

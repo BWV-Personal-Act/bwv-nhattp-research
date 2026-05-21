@@ -1,7 +1,9 @@
-import { ref, computed, type Ref } from 'vue';
-import { isNumber } from 'radash';
+import { isNumber } from "radash";
+import { computed, type Ref, ref } from "vue";
 
-export function useBalanceFilter<T extends { balance: number | string }>(dataList: Ref<T[]>) {
+export function useBalanceFilter<T extends { balance: number | string }>(
+  dataList: Ref<T[]>,
+) {
   const minBalance = ref<number | null>(null);
   const maxBalance = ref<number | null>(null);
 
@@ -11,9 +13,9 @@ export function useBalanceFilter<T extends { balance: number | string }>(dataLis
 
     if (!isNumber(min) && !isNumber(max)) return dataList.value;
 
-    return dataList.value.filter(item => {
+    return dataList.value.filter((item) => {
       const bal = Number(item.balance);
-      
+
       const satisfiesMin = !isNumber(min) || bal >= min;
       const satisfiesMax = !isNumber(max) || bal <= max;
 

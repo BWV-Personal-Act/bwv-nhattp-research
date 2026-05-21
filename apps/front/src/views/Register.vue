@@ -11,7 +11,9 @@
     @submit="onSubmit"
   >
     <div class="field">
-      <label for="nationality" class="block mb-2 font-medium">Nationality</label>
+      <label for="nationality" class="block mb-2 font-medium"
+        >Nationality</label
+      >
       <Dropdown
         id="nationality"
         v-model="nationality"
@@ -65,7 +67,9 @@
           <Divider />
           <p class="mt-2 text-sm text-600">Safe Password Tips:</p>
           <ul class="pl-3 ml-2 mt-0 text-sm text-600" style="line-height: 1.5">
-            <li>At least 8 characters, with uppercase, lowercase, and numbers</li>
+            <li>
+              At least 8 characters, with uppercase, lowercase, and numbers
+            </li>
             <li>Contains at least 1 special character (e.g., !@#$%)</li>
           </ul>
         </template>
@@ -74,7 +78,9 @@
     </div>
 
     <div class="field">
-      <label for="confirmPassword" class="block mb-2 font-medium">Confirm Password</label>
+      <label for="confirmPassword" class="block mb-2 font-medium"
+        >Confirm Password</label
+      >
       <Password
         v-model="confirmPassword"
         placeholder="Confirm Password"
@@ -89,46 +95,46 @@
   </AuthLayout>
 </template>
 <script setup lang="ts">
-  import { useRouter } from 'vue-router';
-  import { useAuthStore } from '../stores/authStore';
-  import { useForm } from 'vee-validate';
-  import {
-    registerSchema,
-    type RegisterDto,
-    NATIONALITY_OPTIONS,
-    Nationality,
-    APP_ROUTES,
-  } from '@intern/factory';
+import {
+  APP_ROUTES,
+  Nationality,
+  NATIONALITY_OPTIONS,
+  type RegisterDto,
+  registerSchema,
+} from "@intern/factory";
+import Divider from "primevue/divider";
+import Dropdown from "primevue/dropdown";
+import InputText from "primevue/inputtext";
+import Password from "primevue/password";
+import { useForm } from "vee-validate";
+import { useRouter } from "vue-router";
 
-  import AuthLayout from '../components/AuthLayout.vue';
-  import InputText from 'primevue/inputtext';
-  import Password from 'primevue/password';
-  import Divider from 'primevue/divider';
-  import Dropdown from 'primevue/dropdown';
+import AuthLayout from "../components/AuthLayout.vue";
+import { useAuthStore } from "../stores/authStore";
 
-  const router = useRouter();
-  const authStore = useAuthStore();
+const router = useRouter();
+const authStore = useAuthStore();
 
-  const { handleSubmit, errors, defineField } = useForm<RegisterDto>({
-    validationSchema: registerSchema,
-    initialValues: {
-      name: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      nationality: Nationality.US,
-      balance: 0,
-    },
-  });
+const { handleSubmit, errors, defineField } = useForm<RegisterDto>({
+  validationSchema: registerSchema,
+  initialValues: {
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    nationality: Nationality.US,
+    balance: 0,
+  },
+});
 
-  const [nationality] = defineField('nationality');
-  const [name] = defineField('name');
-  const [email] = defineField('email');
-  const [password] = defineField('password');
-  const [confirmPassword] = defineField('confirmPassword');
+const [nationality] = defineField("nationality");
+const [name] = defineField("name");
+const [email] = defineField("email");
+const [password] = defineField("password");
+const [confirmPassword] = defineField("confirmPassword");
 
-  const onSubmit = handleSubmit(async values => {
-    const success = await authStore.register(values);
-    if (success) router.push({ name: APP_ROUTES.FRONTEND.LOGIN });
-  });
+const onSubmit = handleSubmit(async (values) => {
+  const success = await authStore.register(values);
+  if (success) router.push({ name: APP_ROUTES.FRONTEND.LOGIN });
+});
 </script>

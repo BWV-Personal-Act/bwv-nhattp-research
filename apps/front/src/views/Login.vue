@@ -12,7 +12,13 @@
   >
     <div class="field">
       <span class="p-input-icon-left w-full">
-        <InputText v-model="form.email" type="email" placeholder="Email" class="w-full" required />
+        <InputText
+          v-model="form.email"
+          type="email"
+          placeholder="Email"
+          class="w-full"
+          required
+        />
       </span>
     </div>
 
@@ -33,21 +39,24 @@
 </template>
 
 <script setup lang="ts">
-  import { reactive } from 'vue';
-  import { useRouter } from 'vue-router';
-  import { useAuthStore } from '../stores/authStore';
-  import { APP_ROUTES } from '@intern/factory';
+import { APP_ROUTES } from "@intern/factory";
+import InputText from "primevue/inputtext";
+import Password from "primevue/password";
+import { reactive } from "vue";
+import { useRouter } from "vue-router";
 
-  import AuthLayout from '../components/AuthLayout.vue';
-  import InputText from 'primevue/inputtext';
-  import Password from 'primevue/password';
+import AuthLayout from "../components/AuthLayout.vue";
+import { useAuthStore } from "../stores/authStore";
 
-  const router = useRouter();
-  const authStore = useAuthStore();
-  const form = reactive({ email: '', password: '' });
+const router = useRouter();
+const authStore = useAuthStore();
+const form = reactive({ email: "", password: "" });
 
-  const handleLogin = async () => {
-    const success = await authStore.login({ email: form.email, password: form.password });
-    if (success) router.push({ name: APP_ROUTES.FRONTEND.DASHBOARD });
-  };
+const handleLogin = async () => {
+  const success = await authStore.login({
+    email: form.email,
+    password: form.password,
+  });
+  if (success) router.push({ name: APP_ROUTES.FRONTEND.DASHBOARD });
+};
 </script>

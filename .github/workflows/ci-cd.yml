@@ -1,0 +1,71 @@
+name: CI/CD
+run-name: Test & Build
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js (version >=22)
+        uses: actions/setup-node@v5
+        with:
+          node-version: '>=22'
+
+      - name: Install Yarn
+        run: corepack enable && corepack prepare yarn@4.12.0 --activate
+
+      - name: Install dependencies
+        run: yarn install
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js (version >=22)
+        uses: actions/setup-node@v5
+        with:
+          node-version: '>=22'
+
+      - name: Install Yarn
+        run: corepack enable && corepack prepare yarn@4.12.0 --activate
+
+      - name: Restore Yarn dependencies from cache
+        run: yarn install --immutable
+
+      - name: Run lint and prettier
+        run: yarn lint && yarn prettier
+
+      - name: Run Docker lint and prettier
+        run: docker build --target lint .
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js (version >=22)
+        uses: actions/setup-node@v5
+        with:
+          node-version: '>=22'
+
+      - name: Install Yarn
+        run: corepack enable && corepack prepare yarn@4.12.0 --activate
+
+      - name: Restore Yarn dependencies from cache
+        run: yarn install --immutable
+
+      - name: Build API
+        run: yarn build:api
+
+      - name: Build Front
+        run: yarn build:front

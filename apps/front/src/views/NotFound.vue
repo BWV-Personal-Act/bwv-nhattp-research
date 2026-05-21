@@ -4,22 +4,21 @@
       <h1 class="error-code">404</h1>
       <h2 class="error-title">Page Not Found</h2>
       <p class="error-message">
-        The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.
+        The page you are looking for might have been removed, had its name
+        changed, or is temporarily unavailable.
       </p>
-      <button @click="goHome" class="home-button">
-        Go to Home
-      </button>
+      <button @click="goHome" class="home-button">Go to Home</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router";
 
 const router = useRouter();
 
 const goHome = () => {
-  router.push({ name: 'Dashboard' });
+  router.push({ name: "Dashboard" });
 };
 </script>
 
@@ -75,7 +74,9 @@ const goHome = () => {
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .home-button:hover {

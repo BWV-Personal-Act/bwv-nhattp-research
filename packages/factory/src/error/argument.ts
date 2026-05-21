@@ -1,7 +1,7 @@
-import { getReasonPhrase, StatusCodes } from 'http-status-codes';
-import { isEmpty } from 'radash';
+import { getReasonPhrase, StatusCodes } from "http-status-codes";
+import { isEmpty } from "radash";
 
-import BWError from './error';
+import BWError from "./error";
 
 /**
  * ArgumentError

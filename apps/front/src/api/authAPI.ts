@@ -1,6 +1,7 @@
-import axiosInstance from './config';
-import type { MessageResponse } from './types';
-import { APP_ROUTES } from '@intern/factory';
+import { APP_ROUTES } from "@intern/factory";
+
+import axiosInstance from "./config";
+import type { MessageResponse } from "./types";
 
 export interface LoginDto {
   email: string;
@@ -30,7 +31,11 @@ export const authAPI = {
   register: (data: RegisterDto) =>
     axiosInstance.post<{ id: number }>(APP_ROUTES.BACKEND.AUTH.REGISTER, data),
 
-  logout: () => axiosInstance.post<MessageResponse>(APP_ROUTES.BACKEND.AUTH.LOGOUT),
+  logout: () =>
+    axiosInstance.post<MessageResponse>(APP_ROUTES.BACKEND.AUTH.LOGOUT),
 
-  getMe: () => axiosInstance.get<{ id: number; email: string; name: string }>(APP_ROUTES.BACKEND.AUTH.ME),
+  getMe: () =>
+    axiosInstance.get<{ id: number; email: string; name: string }>(
+      APP_ROUTES.BACKEND.AUTH.ME,
+    ),
 };

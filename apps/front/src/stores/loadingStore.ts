@@ -1,8 +1,8 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import { LOADING_CONFIG } from '@intern/factory';
+import { LOADING_CONFIG } from "@intern/factory";
+import { defineStore } from "pinia";
+import { computed, ref } from "vue";
 
-export const useLoadingStore = defineStore('loading', () => {
+export const useLoadingStore = defineStore("loading", () => {
   const isLoading = ref(false);
   const loadingStartTime = ref<number | null>(null);
   const minimumDisplayTime = LOADING_CONFIG.MINIMUM_DISPLAY_TIME;

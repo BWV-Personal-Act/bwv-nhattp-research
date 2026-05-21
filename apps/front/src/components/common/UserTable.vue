@@ -5,13 +5,23 @@
     :loading="loading"
     :rows="5"
     :searchable="true"
-    :initial-search="searchQuery" :global-filter-fields="['name', 'email', 'nationality', 'balance']"
-    @search="onSearch" >
+    :initial-search="searchQuery"
+    :global-filter-fields="['name', 'email', 'nationality', 'balance']"
+    @search="onSearch"
+  >
     <template #filters>
       <div class="balance-filters">
-        <InputNumber v-model="minBalance" placeholder="Min Balance" class="balance-input" />
+        <InputNumber
+          v-model="minBalance"
+          placeholder="Min Balance"
+          class="balance-input"
+        />
         <span class="separator">-</span>
-        <InputNumber v-model="maxBalance" placeholder="Max Balance" class="balance-input" />
+        <InputNumber
+          v-model="maxBalance"
+          placeholder="Max Balance"
+          class="balance-input"
+        />
       </div>
     </template>
 
@@ -27,7 +37,9 @@
 
     <Column field="nationality" header="Nationality" :style="{ width: '65px' }">
       <template #body="{ data }">
-        <span :class="data.nationality === Nationality.US ? 'us-text' : 'jp-text'">
+        <span
+          :class="data.nationality === Nationality.US ? 'us-text' : 'jp-text'"
+        >
           {{ data.nationality }}
         </span>
       </template>
@@ -49,7 +61,11 @@
 
     <Column header="Actions" :style="{ width: '70px', textAlign: 'center' }">
       <template #body="{ data }">
-        <Button icon="pi pi-pencil" class="p-button-text p-mr-2" @click="$emit('edit', data)" />
+        <Button
+          icon="pi pi-pencil"
+          class="p-button-text p-mr-2"
+          @click="$emit('edit', data)"
+        />
         <Button
           icon="pi pi-trash"
           class="p-button-text p-button-danger"
@@ -61,84 +77,85 @@
 </template>
 
 <script setup lang="ts">
-  import { inject, toRefs, ref, watch } from 'vue';
-  import { useRoute, useRouter } from 'vue-router'; 
-  import BaseTable from './BaseTable.vue';
-  import Column from 'primevue/column';
-  import Button from 'primevue/button';
-  import InputNumber from 'primevue/inputnumber';
-  import type { UserFromApi } from '@intern/factory';
-  import type { AppConfig } from '@intern/factory';
-  import { formatCurrency, formatDate } from '../../utils/formatters';
-  import { useBalanceFilter } from '../../composables/useBalanceFilter';
-  import { Nationality } from '@intern/factory';
+import type { UserFromApi } from "@intern/factory";
+import type { AppConfig } from "@intern/factory";
+import { Nationality } from "@intern/factory";
+import Button from "primevue/button";
+import Column from "primevue/column";
+import InputNumber from "primevue/inputnumber";
+import { inject, ref, toRefs, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
-  const route = useRoute();
-  const router = useRouter();
+import { useBalanceFilter } from "../../composables/useBalanceFilter";
+import { formatCurrency, formatDate } from "../../utils/formatters";
+import BaseTable from "./BaseTable.vue";
 
-  const props = defineProps<{ users: UserFromApi[]; loading: boolean }>();
-  defineEmits(['edit', 'delete', 'view']);
-  const searchQuery = ref((route.query.search as string) || '');
+const route = useRoute();
+const router = useRouter();
 
-  const appConfig = inject<AppConfig>('appConfig');
+const props = defineProps<{ users: UserFromApi[]; loading: boolean }>();
+defineEmits(["edit", "delete", "view"]);
+const searchQuery = ref((route.query.search as string) || "");
 
-  const { users } = toRefs(props);
+const appConfig = inject<AppConfig>("appConfig");
 
-  const { minBalance, maxBalance, filteredData } = useBalanceFilter(users);
+const { users } = toRefs(props);
 
-  watch(
-    () => route.query.search,
-    (newSearch) => {
-      const query = newSearch ? String(newSearch) : '';
-      if (searchQuery.value !== query) {
-        searchQuery.value = query;
-      }
+const { minBalance, maxBalance, filteredData } = useBalanceFilter(users);
+
+watch(
+  () => route.query.search,
+  (newSearch) => {
+    const query = newSearch ? String(newSearch) : "";
+    if (searchQuery.value !== query) {
+      searchQuery.value = query;
     }
-  );
+  },
+);
 
-  const onSearch = (keyword: string) => {
-    const currentQuery = { ...route.query };
-    if (keyword) {
-      currentQuery.search = keyword;
-    } else {
-      delete currentQuery.search;
-    }
-    router.push({ query: currentQuery });
-  };
+const onSearch = (keyword: string) => {
+  const currentQuery = { ...route.query };
+  if (keyword) {
+    currentQuery.search = keyword;
+  } else {
+    delete currentQuery.search;
+  }
+  router.push({ query: currentQuery });
+};
 </script>
 
 <style scoped>
-  .us-text {
-    font-weight: bold;
-    color: #2563eb;
-  }
-  .jp-text {
-    font-weight: bold;
-    color: #dc2626;
-  }
-  .user-link {
-    color: #0ea5e9;
-    cursor: pointer;
-    font-weight: 500;
-    text-decoration: underline;
-    text-decoration-color: transparent;
-    transition: text-decoration-color 0.2s;
-  }
-  .user-link:hover {
-    text-decoration-color: #0ea5e9;
-  }
+.us-text {
+  font-weight: bold;
+  color: #2563eb;
+}
+.jp-text {
+  font-weight: bold;
+  color: #dc2626;
+}
+.user-link {
+  color: #0ea5e9;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.2s;
+}
+.user-link:hover {
+  text-decoration-color: #0ea5e9;
+}
 
-  .balance-filters {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .separator {
-    color: #64748b;
-    font-weight: bold;
-  }
+.balance-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.separator {
+  color: #64748b;
+  font-weight: bold;
+}
 
-  :deep(.balance-input .p-inputnumber-input) {
-    width: 120px;
-  }
+:deep(.balance-input .p-inputnumber-input) {
+  width: 120px;
+}
 </style>

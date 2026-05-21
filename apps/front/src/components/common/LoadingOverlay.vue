@@ -10,8 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useLoadingStore } from '../../stores/loadingStore';
+import { computed } from "vue";
+
+import { useLoadingStore } from "../../stores/loadingStore";
 
 const loadingStore = useLoadingStore();
 const visible = computed(() => loadingStore.shouldShowLoading);

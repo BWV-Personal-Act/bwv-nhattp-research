@@ -3,12 +3,18 @@
 FROM node:22-alpine AS deps
 WORKDIR /app
 RUN corepack enable
-COPY package.json yarn.lock .yarnrc.yml tsconfig.json ./
+COPY package.json yarn.lock .yarnrc.yml tsconfig.json eslint.config.cjs ./
 COPY apps/api/package.json apps/api/package.json
 COPY apps/front/package.json apps/front/package.json
 COPY packages/domain/package.json packages/domain/package.json
 COPY packages/factory/package.json packages/factory/package.json
 RUN yarn install --immutable
+
+FROM deps AS lint
+COPY apps apps
+COPY packages packages
+RUN yarn lint
+RUN yarn prettier
 
 FROM deps AS builder
 COPY apps apps

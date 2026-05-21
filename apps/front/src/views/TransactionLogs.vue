@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import TransferLogs from '../components/common/TransferLogs.vue';
+import TransferLogs from "../components/common/TransferLogs.vue";
 </script>
 
 <style scoped>
