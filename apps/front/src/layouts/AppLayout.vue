@@ -18,28 +18,25 @@
 </template>
 
 <script setup lang="ts">
+import { APP_ROUTES } from "@intern/factory";
 import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import AppHeader from "@/components/AppHeader.vue";
 import AppSidebar from "@/components/AppSidebar.vue";
 import { useLazyQuery } from "@/composables";
+import { useLoading } from "@/composables/useLoading";
 import { authService } from "@/services";
 import { useAuthStore } from "@/stores/authStore";
-import { useLoadingStore } from "@/stores/loadingStore";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const loadingStore = useLoadingStore();
 const collapsed = ref(false);
 
 const { result, refetch, error, isLoading } = useLazyQuery(authService.getMe);
 
-watch(isLoading, (value) => {
-  if (value) loadingStore.startLoading();
-  else loadingStore.stopLoading();
-});
+useLoading(isLoading);
 
 watch(
   () => route.fullPath,
@@ -48,7 +45,7 @@ watch(
     await refetch();
     if (error.value) {
       authStore.clearAuth();
-      router.push({ name: "Login" });
+      router.push({ name: APP_ROUTES.FRONTEND.LOGIN });
       return;
     }
     authStore.setCurrentUser(result.data);
@@ -90,8 +87,9 @@ watch(
 .page-title {
   margin: 0;
   color: #334155;
-  font-size: 1.5rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
 }
 
 .page-layout {
@@ -110,6 +108,9 @@ watch(
 
   .page-layout {
     padding: 1rem;
+  }
+  .page-title {
+    font-size: 1.6rem;
   }
 }
 </style>

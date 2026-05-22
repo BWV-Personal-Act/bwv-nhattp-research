@@ -13,12 +13,13 @@
 </template>
 
 <script setup lang="ts">
+import { APP_ROUTES } from "@intern/factory";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 
 const goHome = () => {
-  router.push({ name: "Dashboard" });
+  router.push({ name: APP_ROUTES.FRONTEND.DASHBOARD });
 };
 </script>
 

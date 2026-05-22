@@ -68,13 +68,13 @@ import { type AppConfig, TransferLogData } from "@intern/factory";
 import Column from "primevue/column";
 import type { DataTablePageEvent } from "primevue/datatable";
 import Dropdown from "primevue/dropdown";
-import { inject, onMounted, ref, watch } from "vue";
+import { computed, inject, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { useLazyQuery } from "../../composables";
+import { useLoading } from "../../composables/useLoading";
 import { useTimeFilter } from "../../composables/useTimeFilter";
 import { transferService } from "../../services";
-import { useLoadingStore } from "../../stores/loadingStore";
 import {
   formatCurrency,
   formatFullDate,
@@ -89,8 +89,6 @@ const props = defineProps<{
 const route = useRoute();
 const router = useRouter();
 const appConfig = inject<AppConfig>("appConfig");
-const loadingStore = useLoadingStore();
-const isFirstLoad = ref(true);
 
 watch(
   () => props.targetUserId,
@@ -119,13 +117,9 @@ const {
 
 const { timeRange, timeOptions, dateFilters } = useTimeFilter();
 
-watch(
-  () => loadingStore.shouldShowLoading,
-  (newVal) => {
-    loading.value = newVal;
-  },
-  { immediate: true },
-);
+const isFirstLoad = ref(true);
+const globalLogsLoading = computed(() => loading.value && isFirstLoad.value);
+useLoading(globalLogsLoading);
 
 onMounted(() => {
   const urlSearch = route.query.search as string;
@@ -147,9 +141,6 @@ watch(
 );
 
 const fetchLogs = async () => {
-  if (isFirstLoad.value) {
-    loadingStore.startLoading();
-  }
   loading.value = true;
   try {
     const { startDate, endDate } = dateFilters.value;
@@ -181,10 +172,7 @@ const fetchLogs = async () => {
     console.error("Error fetching logs:", error);
   } finally {
     loading.value = false;
-    if (isFirstLoad.value) {
-      loadingStore.stopLoading();
-      isFirstLoad.value = false;
-    }
+    isFirstLoad.value = false;
   }
 };
 

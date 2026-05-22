@@ -11,6 +11,8 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
+import { vietnamNowSql } from "./time";
+
 const nationalityValues = Object.values(Nationality) as [string, ...string[]];
 export const nationalityEnum = pgEnum("nationality", nationalityValues);
 export const transferStatusEnum = pgEnum("transfer_status", [
@@ -29,8 +31,12 @@ export const users = pgTable("users", {
     .notNull()
     .default("0"),
   nationality: nationalityEnum("nationality").default(Nationality.US),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { mode: "string" })
+    .default(vietnamNowSql)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { mode: "string" })
+    .default(vietnamNowSql)
+    .notNull(),
 });
 
 export const transferLogs = pgTable(
@@ -46,8 +52,12 @@ export const transferLogs = pgTable(
     amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
     status: transferStatusEnum("status").notNull().default("success"),
     message: varchar("message", { length: 255 }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at", { mode: "string" })
+      .default(vietnamNowSql)
+      .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" })
+      .default(vietnamNowSql)
+      .notNull(),
   },
   (table) => {
     return {

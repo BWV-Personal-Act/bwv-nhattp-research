@@ -2,6 +2,7 @@ import { eq, SQL } from "drizzle-orm";
 import { AnyPgColumn, AnyPgTable } from "drizzle-orm/pg-core";
 
 import { db } from "../db";
+import { vietnamNowSql } from "../time";
 
 type TableWithId = AnyPgTable & { id: AnyPgColumn };
 
@@ -46,7 +47,11 @@ export class BaseRepository<
   async create(data: TInsert): Promise<TSelect[]> {
     return db
       .insert(this.table)
-      .values(data)
+      .values({
+        ...data,
+        createdAt: vietnamNowSql,
+        updatedAt: vietnamNowSql,
+      })
       .returning()
       .then((rows) => rows as unknown as TSelect[]);
   }
@@ -54,7 +59,7 @@ export class BaseRepository<
   async update(id: number, data: Partial<TInsert>) {
     return db
       .update(this.table)
-      .set({ ...data, updatedAt: new Date() })
+      .set({ ...data, updatedAt: vietnamNowSql })
       .where(eq(this.idColumn, id));
   }
 

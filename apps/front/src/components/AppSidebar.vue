@@ -5,20 +5,28 @@
     </div>
 
     <nav class="sidebar-nav">
-      <router-link to="/users" class="nav-item" active-class="active">
+      <router-link
+        :to="{ name: APP_ROUTES.FRONTEND.DASHBOARD }"
+        class="nav-item"
+        active-class="active"
+      >
         <i class="pi pi-home"></i>
         <span class="nav-label">Dashboard</span>
       </router-link>
       <router-link
         v-if="userId"
-        :to="{ name: 'UserProfile', params: { id: userId } }"
+        :to="{ name: APP_ROUTES.FRONTEND.USER_PROFILE, params: { id: userId } }"
         class="nav-item"
         active-class="active"
       >
         <i class="pi pi-user"></i>
         <span class="nav-label">User Profile</span>
       </router-link>
-      <router-link to="/transactions" class="nav-item" active-class="active">
+      <router-link
+        :to="{ name: APP_ROUTES.FRONTEND.TRANSACTIONS_LOGS }"
+        class="nav-item"
+        active-class="active"
+      >
         <i class="pi pi-list"></i>
         <span class="nav-label">Transactions Logs</span>
       </router-link>
@@ -27,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+import { APP_ROUTES } from "@intern/factory";
 import { computed } from "vue";
 
 import { useAuthStore } from "../stores/authStore";

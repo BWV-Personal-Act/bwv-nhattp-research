@@ -13,13 +13,13 @@ const routes: RouteRecordRaw[] = [...allRoutes];
 
 routes.push(
   {
-    path: "/",
+    path: APP_ROUTES.FRONTEND_PATHS.ROOT,
     redirect: { name: APP_ROUTES.FRONTEND.DASHBOARD },
   },
   {
     path: "/:pathMatch(.*)*",
     redirect: () => ({
-      name: "NotFound",
+      name: APP_ROUTES.FRONTEND.NOT_FOUND,
       query: {},
       replace: true,
     }),

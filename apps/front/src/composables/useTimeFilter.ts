@@ -1,5 +1,16 @@
 import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { computed, ref } from "vue";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const API_TIMEZONE = "Asia/Ho_Chi_Minh";
+const API_DATE_FORMAT = "YYYY-MM-DD HH:mm:ss";
+
+const formatApiDate = (date: dayjs.Dayjs) =>
+  date.tz(API_TIMEZONE).format(API_DATE_FORMAT);
 
 export function useTimeFilter() {
   const timeRange = ref("all");
@@ -16,21 +27,22 @@ export function useTimeFilter() {
     if (timeRange.value === "all")
       return { startDate: undefined, endDate: undefined };
 
-    const endDate = dayjs().toISOString();
+    const now = dayjs().tz(API_TIMEZONE);
+    const endDate = formatApiDate(now);
     let startDate: string | undefined;
 
     switch (timeRange.value) {
       case "5m":
-        startDate = dayjs().subtract(5, "minute").toISOString();
+        startDate = formatApiDate(now.subtract(5, "minute"));
         break;
       case "10m":
-        startDate = dayjs().subtract(10, "minute").toISOString();
+        startDate = formatApiDate(now.subtract(10, "minute"));
         break;
       case "1h":
-        startDate = dayjs().subtract(1, "hour").toISOString();
+        startDate = formatApiDate(now.subtract(1, "hour"));
         break;
       case "today":
-        startDate = dayjs().startOf("day").toISOString();
+        startDate = formatApiDate(now.startOf("day"));
         break;
     }
 

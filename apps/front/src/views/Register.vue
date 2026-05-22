@@ -107,16 +107,15 @@ import Dropdown from "primevue/dropdown";
 import InputText from "primevue/inputtext";
 import Password from "primevue/password";
 import { useForm } from "vee-validate";
-import { computed, watch } from "vue";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 
 import AuthLayout from "../components/AuthLayout.vue";
 import { useMutation } from "../composables";
+import { useLoading } from "../composables/useLoading";
 import { type ApiErrorResponse, authService } from "../services";
-import { useLoadingStore } from "../stores/loadingStore";
 
 const router = useRouter();
-const loadingStore = useLoadingStore();
 const {
   mutate: register,
   isLoading: isRegistering,
@@ -131,10 +130,7 @@ const registerErrorMessage = computed(() => {
   return typedError?.response?.data?.message || null;
 });
 
-watch(isRegistering, (value) => {
-  if (value) loadingStore.startLoading();
-  else loadingStore.stopLoading();
-});
+useLoading(isRegistering);
 
 const { handleSubmit, errors, defineField } = useForm<RegisterDto>({
   validationSchema: registerSchema,

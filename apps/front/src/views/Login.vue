@@ -47,13 +47,12 @@ import { useRouter } from "vue-router";
 
 import AuthLayout from "../components/AuthLayout.vue";
 import { useMutation } from "../composables";
+import { useLoading } from "../composables/useLoading";
 import { type ApiErrorResponse, authService } from "../services";
 import { useAuthStore } from "../stores/authStore";
-import { useLoadingStore } from "../stores/loadingStore";
 
 const router = useRouter();
 const authStore = useAuthStore();
-const loadingStore = useLoadingStore();
 const form = reactive({ email: "", password: "" });
 const {
   result: loginResult,
@@ -72,9 +71,8 @@ const loginErrorMessage = computed(() => {
 
 watch(isLoggingIn, (value) => {
   authStore.setLoading(value);
-  if (value) loadingStore.startLoading();
-  else loadingStore.stopLoading();
 });
+useLoading(isLoggingIn);
 
 const handleLogin = async () => {
   await login({

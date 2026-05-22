@@ -5,6 +5,16 @@ export const APP_ROUTES = {
     DASHBOARD: "Dashboard",
     USER_PROFILE: "UserProfile",
     TRANSACTIONS_LOGS: "TransactionsLogs",
+    NOT_FOUND: "NotFound",
+  },
+  FRONTEND_PATHS: {
+    ROOT: "/",
+    LOGIN: "login",
+    REGISTER: "register",
+    USERS: "users",
+    USER_PROFILE: "users/:id(\\d+)",
+    TRANSACTIONS: "transactions",
+    ERROR: "/error",
   },
   BACKEND: {
     AUTH: {

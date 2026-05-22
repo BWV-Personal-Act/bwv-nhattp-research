@@ -1,84 +1,76 @@
 <template>
   <div class="user-profile-page">
-    <div class="header-action">
-      <Button
-        icon="pi pi-arrow-left"
-        label="Back to Users"
-        class="p-button-text"
-        @click="goBack"
-      />
-    </div>
-
-    <h1 class="page-title">User Profile</h1>
-
     <div v-if="loading" class="loading-state">Loading user details...</div>
 
-    <div
-      v-else-if="user"
-      class="profile-layout"
-      :class="{ 'single-column': !isMyProfile }"
-    >
-      <div v-if="isMyProfile" class="transfer-section">
-        <h3>Transfer Money</h3>
-        <p class="subtitle">Quickly transfer money from your wallet</p>
+    <template v-else-if="user">
+      <div class="profile-layout" :class="{ 'single-column': !isMyProfile }">
+        <div class="profile-main">
+          <div v-if="isMyProfile" class="transfer-section">
+            <div v-if="loadingUsers" class="transfer-loading">
+              Loading receivers...
+            </div>
+            <TransferForm
+              v-else
+              :users="userStore.users"
+              :current-user-id="authStore.currentUser?.id || 0"
+              @success="handleTransferSuccess"
+            />
+          </div>
 
-        <div class="transfer-wrapper">
-          <TransferForm
-            :users="userStore.users"
-            :current-user-id="authStore.currentUser?.id || 0"
-            @success="handleTransferSuccess"
-          />
+          <div class="logs-section">
+            <TransferLogs ref="logsRef" :target-user-id="user.id" />
+          </div>
+        </div>
+
+        <div class="profile-card">
+          <div class="avatar-section">
+            <div class="avatar-frame">
+              <img
+                v-if="avatarUrl"
+                :src="avatarUrl"
+                :alt="`${user.name} avatar`"
+                class="avatar-image"
+              />
+              <i v-else class="pi pi-user avatar-fallback"></i>
+            </div>
+
+            <div v-if="isMyProfile" class="avatar-actions">
+              <input
+                ref="avatarInput"
+                class="avatar-input"
+                type="file"
+                accept="image/jpeg"
+                @change="handleAvatarSelect"
+              />
+              <Button
+                icon="pi pi-upload"
+                label="Upload Avatar"
+                :loading="isUploadingAvatar"
+                :disabled="isUploadingAvatar"
+                @click="openAvatarPicker"
+              />
+              <small class="avatar-note">JPG only, max 2MB.</small>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <div
+              v-for="item in profileDetails"
+              :key="item.label"
+              class="info-item"
+            >
+              <span class="label">{{ item.label }}:</span>
+              <span
+                class="value"
+                :class="{ 'highlight-text': item.isHighlight }"
+              >
+                {{ item.value }}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div class="profile-card">
-        <div class="avatar-section">
-          <div class="avatar-frame">
-            <img
-              v-if="avatarUrl"
-              :src="avatarUrl"
-              :alt="`${user.name} avatar`"
-              class="avatar-image"
-            />
-            <i v-else class="pi pi-user avatar-fallback"></i>
-          </div>
-
-          <div v-if="isMyProfile" class="avatar-actions">
-            <input
-              ref="avatarInput"
-              class="avatar-input"
-              type="file"
-              accept="image/jpeg"
-              @change="handleAvatarSelect"
-            />
-            <Button
-              icon="pi pi-upload"
-              label="Upload Avatar"
-              :loading="uploadingAvatar"
-              :disabled="uploadingAvatar"
-              @click="openAvatarPicker"
-            />
-            <small class="avatar-note">JPG only, max 2MB.</small>
-          </div>
-        </div>
-
-        <div class="info-grid">
-          <div
-            v-for="item in profileDetails"
-            :key="item.label"
-            class="info-item"
-          >
-            <span class="label">{{ item.label }}:</span>
-            <span class="value" :class="{ 'highlight-text': item.isHighlight }">
-              {{ item.value }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div v-if="user" class="logs-section mt-4">
-      <TransferLogs ref="logsRef" :target-user-id="user.id" />
-    </div>
+    </template>
 
     <div v-else class="error-state">User not found.</div>
   </div>
@@ -88,27 +80,25 @@
 import type { AppConfig, UserFromApi } from "@intern/factory";
 import Button from "primevue/button";
 import { computed, inject, onMounted, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 
 import TransferLogs from "../components/common/TransferLogs.vue";
 import TransferForm from "../components/TransferForm.vue";
 import { useLazyQuery, useMutation } from "../composables";
+import { useLoading } from "../composables/useLoading";
 import { useNotifications } from "../composables/useNotifications";
 import { type ApiErrorResponse, authService, userService } from "../services";
 import { useAuthStore } from "../stores/authStore";
-import { useLoadingStore } from "../stores/loadingStore";
 import { useUserStore } from "../stores/userStore";
 
 const route = useRoute();
-const router = useRouter();
 const userStore = useUserStore();
 const authStore = useAuthStore();
-const loadingStore = useLoadingStore();
 const { notifySuccess, notifyError } = useNotifications();
 
 const user = ref<UserFromApi | null>(null);
 const loading = ref(true);
-const uploadingAvatar = ref(false);
+const loadingUsers = ref(false);
 const avatarInput = ref<HTMLInputElement | null>(null);
 const {
   result: userResult,
@@ -119,6 +109,7 @@ const {
   result: avatarResult,
   mutate: uploadAvatar,
   error: uploadAvatarError,
+  isLoading: isUploadingAvatar,
 } = useMutation(userService.uploadAvatar);
 const {
   result: usersResult,
@@ -132,6 +123,8 @@ const {
 } = useLazyQuery(authService.getMe);
 
 const appConfig = inject<AppConfig>("appConfig");
+
+useLoading(loading, isUploadingAvatar);
 
 const formattedBalance = computed(() => {
   if (!user.value || !appConfig) return "";
@@ -159,25 +152,29 @@ const avatarUrl = computed(() => {
   return `${user.value.avatarUrl}${separator}v=${encodeURIComponent(user.value.updatedAt)}`;
 });
 
-const goBack = () => router.push("/users");
-
 const fetchUserDetails = async () => {
   loading.value = true;
-  loadingStore.startLoading();
   await refetchUser(Number(route.params.id));
   if (!userError.value) {
     user.value = userResult.data;
+    if (isMyProfile.value && userStore.users.length === 0) {
+      await loadUsers();
+    }
   } else {
     console.error("Failed to fetch user details", userError.value);
   }
   loading.value = false;
-  loadingStore.stopLoading();
 };
 
 const loadUsers = async () => {
-  await refetchUsers();
-  if (!usersError.value && usersResult.data) {
-    userStore.setUsers(usersResult.data);
+  loadingUsers.value = true;
+  try {
+    await refetchUsers();
+    if (!usersError.value && usersResult.data) {
+      userStore.setUsers(usersResult.data);
+    }
+  } finally {
+    loadingUsers.value = false;
   }
 };
 
@@ -215,8 +212,6 @@ const handleAvatarSelect = async (event: Event) => {
     return;
   }
 
-  uploadingAvatar.value = true;
-  loadingStore.startLoading();
   await uploadAvatar(user.value.id, file);
   if (!uploadAvatarError.value && avatarResult.value) {
     user.value = avatarResult.value;
@@ -228,8 +223,6 @@ const handleAvatarSelect = async (event: Event) => {
     };
     notifyError(typedError?.response?.data?.message || "Upload avatar failed");
   }
-  uploadingAvatar.value = false;
-  loadingStore.stopLoading();
 };
 
 const handleTransferSuccess = async () => {
@@ -246,7 +239,7 @@ onMounted(() => {
 watch(
   isMyProfile,
   (canTransfer) => {
-    if (canTransfer && userStore.users.length === 0 && !userStore.loading) {
+    if (canTransfer && userStore.users.length === 0 && !loadingUsers.value) {
       loadUsers();
     }
   },
@@ -285,27 +278,40 @@ watch(
 
 .profile-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
+  grid-template-columns: 2fr minmax(260px, 1fr); /* transfer ~2/3, profile ~1/3 */
+  gap: 24px;
   align-items: start;
 }
 
 .profile-layout.single-column {
-  grid-template-columns: minmax(auto, 600px);
-  justify-content: center;
+  grid-template-columns: 2fr minmax(260px, 1fr);
 }
-.mt-4 {
-  margin-top: 2rem;
+
+.profile-main {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.logs-section :deep(.base-table-container) {
+  margin-top: 0;
 }
 .profile-card,
 .transfer-section {
   background: #fff;
-  padding: 24px;
+  padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 .transfer-section {
-  border-top: 4px solid #3b82f6;
+  border-left: 4px solid #3b82f6;
+}
+.transfer-loading {
+  color: #64748b;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
 }
 .subtitle {
   color: #64748b;
@@ -385,8 +391,12 @@ watch(
   .profile-card {
     order: 1;
   }
-  .transfer-section {
+  .profile-main {
     order: 2;
+  }
+  .transfer-section {
+    border-left: none;
+    border-top: 4px solid #3b82f6;
   }
 }
 </style>

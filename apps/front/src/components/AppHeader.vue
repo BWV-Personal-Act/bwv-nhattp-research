@@ -20,19 +20,19 @@
 </template>
 
 <script setup lang="ts">
+import { APP_ROUTES } from "@intern/factory";
 import { computed, inject, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import { useMutation } from "../composables";
+import { useLoading } from "../composables/useLoading";
 import { authService } from "../services";
 import { useAuthStore } from "../stores/authStore";
-import { useLoadingStore } from "../stores/loadingStore";
 import { useUserStore } from "../stores/userStore";
 
 const userStore = useUserStore();
 const authStore = useAuthStore();
 const router = useRouter();
-const loadingStore = useLoadingStore();
 const { mutate: logout, isLoading: isLoggingOut } = useMutation(
   authService.logout,
 );
@@ -52,16 +52,15 @@ const formattedTotalBalance = computed(() => {
 
 watch(isLoggingOut, (value) => {
   authStore.setLoading(value);
-  if (value) loadingStore.startLoading();
-  else loadingStore.stopLoading();
 });
+useLoading(isLoggingOut);
 
 const handleLogout = async () => {
   if (authStore.token) {
     await logout();
   }
   authStore.clearAuth();
-  router.push({ name: "Login" });
+  router.push({ name: APP_ROUTES.FRONTEND.LOGIN });
 };
 </script>
 

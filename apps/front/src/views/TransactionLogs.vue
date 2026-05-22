@@ -1,8 +1,6 @@
 <template>
-  <div class="app-root">
-    <div class="transfer-logs-section">
-      <TransferLogs />
-    </div>
+  <div class="transfer-logs-section">
+    <TransferLogs />
   </div>
 </template>
 

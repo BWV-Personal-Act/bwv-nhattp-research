@@ -1,10 +1,11 @@
 import { ERROR_MESSAGES, errors } from "@intern/factory";
-import { and, desc, eq, gte, like, lte, or, sql } from "drizzle-orm";
+import { and, desc, eq, like, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { sift } from "radash";
 
 import { db } from "../db";
 import { NewTransferLog, TransferLog, transferLogs, users } from "../schema";
+import { normalizeVietnamTimestamp, vietnamNowSql } from "../time";
 import { BaseRepository } from "./base.repository";
 
 interface LogFilters {
@@ -44,10 +45,14 @@ class TransferLogRepositoryClass extends BaseRepository<
     }
 
     if (startDate) {
-      conditions.push(gte(transferLogs.createdAt, new Date(startDate)));
+      conditions.push(
+        sql`${transferLogs.createdAt} >= ${normalizeVietnamTimestamp(startDate)}::timestamp`,
+      );
     }
     if (endDate) {
-      conditions.push(lte(transferLogs.createdAt, new Date(endDate)));
+      conditions.push(
+        sql`${transferLogs.createdAt} <= ${normalizeVietnamTimestamp(endDate)}::timestamp`,
+      );
     }
 
     if (search) {
@@ -153,6 +158,8 @@ class TransferLogRepositoryClass extends BaseRepository<
         receiverId: toUserId,
         amount: String(amount),
         status: "success",
+        createdAt: vietnamNowSql,
+        updatedAt: vietnamNowSql,
       });
 
       return true;

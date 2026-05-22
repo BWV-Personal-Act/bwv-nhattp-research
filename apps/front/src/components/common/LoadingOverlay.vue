@@ -1,12 +1,37 @@
 <template>
-  <Transition name="fade">
-    <div v-if="visible" class="loading-overlay">
-      <div class="loading-content">
-        <div class="spinner"></div>
-        <p class="loading-text">Loading...</p>
-      </div>
-    </div>
-  </Transition>
+  <div v-if="visible" class="global-loading-overlay">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      style="
+        margin: auto;
+        background: transparent;
+        display: block;
+        shape-rendering: auto;
+      "
+      width="204px"
+      height="204px"
+      viewBox="0 0 100 100"
+      preserveAspectRatio="xMidYMid"
+    >
+      <g
+        v-for="(item, index) in spinnerConfig"
+        :key="index"
+        :transform="`rotate(${item.rotate} 50 50)`"
+      >
+        <rect x="47" y="30" rx="3" ry="5.28" width="6" height="12">
+          <animate
+            attributeName="opacity"
+            values="1;0"
+            keyTimes="0;1"
+            dur="1.0204081632653061s"
+            :begin="item.begin"
+            repeatCount="indefinite"
+          />
+        </rect>
+      </g>
+    </svg>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -16,60 +41,36 @@ import { useLoadingStore } from "../../stores/loadingStore";
 
 const loadingStore = useLoadingStore();
 const visible = computed(() => loadingStore.shouldShowLoading);
+const spinnerConfig = [
+  { rotate: 0, begin: "-0.8746355685131196s" },
+  { rotate: 51.42857142857143, begin: "-0.728862973760933s" },
+  { rotate: 102.85714285714286, begin: "-0.5830903790087464s" },
+  { rotate: 154.28571428571428, begin: "-0.4373177842565598s" },
+  { rotate: 205.71428571428572, begin: "-0.2915451895043732s" },
+  { rotate: 257.14285714285717, begin: "-0.1457725947521866s" },
+  { rotate: 308.57142857142856, begin: "0s" },
+];
 </script>
 
 <style scoped>
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
+.global-loading-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 2147483647 !important;
+  background-color: rgba(107, 114, 128, 0.5) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
-.loading-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #e9ecef;
-  border-top: 4px solid #007bff;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.loading-text {
-  color: #6c757d;
-  font-size: 16px;
-  margin: 0;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.global-loading-overlay .loading-spinner-svg {
+  width: 204px;
+  height: 204px;
+  background: transparent;
+  display: block;
+  shape-rendering: auto;
 }
 </style>
