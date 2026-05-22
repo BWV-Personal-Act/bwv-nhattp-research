@@ -1,0 +1,63 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch API",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "outputCapture": "std",
+      "cwd": "${workspaceFolder}/apps/api",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": [
+        "dev"
+      ],
+      "envFile": "${workspaceFolder}/.env",
+      "sourceMaps": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Front",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "cwd": "${workspaceFolder}/apps/front",
+      "runtimeExecutable": "yarn",
+      "runtimeArgs": [
+        "dev",
+        "--host"
+      ]
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Debug Chrome",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/apps/front",
+      "sourceMapPathOverrides": {
+        "webpack:///src/*": "${webRoot}/src/*",
+        "vite:///src/*": "${webRoot}/src/*"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run Full-stack",
+      "configurations": [
+        "Launch API",
+        "Launch Front"
+      ]
+    },
+    {
+      "name": "Run Full-stack-Vite",
+      "configurations": [
+        "Launch API",
+        "Launch Front",
+        "Debug Chrome"
+      ]
+    }
+  ]
+}
